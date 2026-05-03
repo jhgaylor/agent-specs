@@ -4,16 +4,17 @@ Personal [Agent on Demand](https://github.com/ravi-hq/agent-on-demand-ex) specs 
 
 ## Apply
 
-From the AoD project directory (so `./aod` is built):
+Secrets are pulled from Infisical (env=`dev`, root path) via the [Infisical CLI](https://infisical.com/docs/cli/overview). The `.infisical.json` in this repo binds it to the right project; sign in once and `./aod apply` resolves the rest.
 
 ```bash
-GH_PAT=ghp_... HONEYCOMB_TOKEN=... POSTHOG_TOKEN=... \
-RENDER_TOKEN=... ALICE_GH_PAT=ghp_... \
-  AOD_BASE_URL=http://localhost:4000 AOD_TOKEN=... \
+infisical login                    # one time
+
+# From the AoD project directory (so `./aod` is built):
+AOD_BASE_URL=http://localhost:4000 AOD_TOKEN=... \
   ./aod apply -f /path/to/aod-specs/aod.yml
 ```
 
-Or pass values inline with `--var KEY=VAL` flags. See `aod apply --help` for details on the substitution layers.
+If you need to override anything via local env or CLI flags, the `${VAR}` / `--var KEY=VAL` paths still work too. See `aod apply --help`.
 
 ## Two layers of `${VAR}` substitution
 

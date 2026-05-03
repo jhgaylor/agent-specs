@@ -6,24 +6,24 @@
 # the file is irrelevant: environments are reconciled first, then
 # vaults, then agents.
 #
-# Two layers of `${VAR}` substitution, both with the same syntax:
+# Secrets are pulled from Infisical at apply time. The .infisical.json
+# in this directory binds us to the right project; we use the `dev`
+# environment, root path. Keys must be present in Infisical *before*
+# applying — see the `infisical:///dev/<NAME>` references below for
+# the exhaustive list.
 #
-#   1. apply-time:    `secrets:` values resolve from the operator's
-#                     local env (or `--var KEY=VAL` flags). That's how
-#                     this file stays free of literal tokens.
+# Apply (after `infisical login` once):
+#
+#   ./aod apply -f aod.yml
+#
+# Two layers of `${VAR}` resolution, same syntax different scopes:
+#
+#   1. apply-time:    `secrets:` values resolve here (Infisical via
+#                     `infisical://...`, or local env / --var via
+#                     `${VAR}`).
 #   2. provision-time: every other `${VAR}` (e.g. agent `mcp_servers`
 #                     headers) resolves at sprite spawn from the
 #                     environment's secrets ∪ the conversation's vault.
-#
-# Apply with the env populated:
-#
-#   GH_PAT=ghp_... HONEYCOMB_TOKEN=... POSTHOG_TOKEN=... \
-#   RENDER_TOKEN=... ALICE_GH_PAT=ghp_... \
-#     ./aod apply -f aod.yml
-#
-# This file is still .gitignored by default — if you want to commit it,
-# remove the entry from .gitignore once you're confident every secret
-# is `${...}` not a literal.
 
 ---
 apiVersion: aod/v1
@@ -50,10 +50,10 @@ spec:
       mount_path: /workspace/agent-on-demand
       secret_key: GITHUB_TOKEN
   secrets:
-    GITHUB_TOKEN: ${GH_PAT}
-    HONEYCOMB_API_KEY: ${HONEYCOMB_TOKEN}
-    POSTHOG_API_KEY: ${POSTHOG_TOKEN}
-    RENDER_API_KEY: ${RENDER_TOKEN}
+    GITHUB_TOKEN: infisical:///dev/GITHUB_TOKEN
+    HONEYCOMB_API_KEY: infisical:///dev/HONEYCOMB_API_KEY
+    POSTHOG_API_KEY: infisical:///dev/POSTHOG_API_KEY
+    RENDER_API_KEY: infisical:///dev/RENDER_API_KEY
 
 ---
 apiVersion: aod/v1
@@ -63,10 +63,10 @@ metadata:
 spec:
   networking_type: unrestricted
   secrets:
-    GITHUB_TOKEN: ${GH_PAT}
-    HONEYCOMB_API_KEY: ${HONEYCOMB_TOKEN}
-    POSTHOG_API_KEY: ${POSTHOG_TOKEN}
-    RENDER_API_KEY: ${RENDER_TOKEN}
+    GITHUB_TOKEN: infisical:///dev/GITHUB_TOKEN
+    HONEYCOMB_API_KEY: infisical:///dev/HONEYCOMB_API_KEY
+    POSTHOG_API_KEY: infisical:///dev/POSTHOG_API_KEY
+    RENDER_API_KEY: infisical:///dev/RENDER_API_KEY
 
 ---
 apiVersion: aod/v1
@@ -84,21 +84,22 @@ metadata:
 spec:
   networking_type: unrestricted
   secrets:
-    GITHUB_TOKEN: ${GH_PAT}
+    GITHUB_TOKEN: infisical:///dev/GITHUB_TOKEN
 
 ---
-# Demo: a personal-creds vault. Pick this when starting a conversation
-# (`aod run AODDocsWriter -p "..." --vault alice`) to override the env's
-# baseline GITHUB_TOKEN with your own — useful for landing PRs as you
-# rather than as the org's service account.
+# Demo vault. Today it just mirrors the env's baseline GITHUB_TOKEN —
+# the override pattern is documented even though there's no actual
+# divergence. Swap in a separate Infisical secret here (e.g.
+# `infisical:///dev/ALICE_GITHUB_TOKEN`) when you want a different
+# identity for conversations selecting `--vault alice`.
 apiVersion: aod/v1
 kind: Vault
 metadata:
   name: alice
 spec:
-  description: Alice's personal GitHub credentials (override the org token)
+  description: Alice's GitHub credentials (currently the same as the env baseline)
   secrets:
-    GITHUB_TOKEN: ${ALICE_GH_PAT}
+    GITHUB_TOKEN: infisical:///dev/GITHUB_TOKEN
 
 ---
 apiVersion: aod/v1
