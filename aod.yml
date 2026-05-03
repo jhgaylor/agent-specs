@@ -1,0 +1,353 @@
+# aod.yml — declarative state for this AoD instance.
+#
+# Apply with:    ./aod apply -f aod.yml
+# Resources are looked up by metadata.name. If the name exists, the
+# spec is PUT (updated). If not, it's POSTed (created). Order inside
+# the file is irrelevant: environments are reconciled first, then
+# vaults, then agents.
+#
+# Two layers of `${VAR}` substitution, both with the same syntax:
+#
+#   1. apply-time:    `secrets:` values resolve from the operator's
+#                     local env (or `--var KEY=VAL` flags). That's how
+#                     this file stays free of literal tokens.
+#   2. provision-time: every other `${VAR}` (e.g. agent `mcp_servers`
+#                     headers) resolves at sprite spawn from the
+#                     environment's secrets ∪ the conversation's vault.
+#
+# Apply with the env populated:
+#
+#   GH_PAT=ghp_... HONEYCOMB_TOKEN=... POSTHOG_TOKEN=... \
+#   RENDER_TOKEN=... ALICE_GH_PAT=ghp_... \
+#     ./aod apply -f aod.yml
+#
+# This file is still .gitignored by default — if you want to commit it,
+# remove the entry from .gitignore once you're confident every secret
+# is `${...}` not a literal.
+
+---
+apiVersion: aod/v1
+kind: Environment
+metadata:
+  name: default
+spec:
+  networking_type: unrestricted
+  setup_script: |
+    echo PROVISIONED-AT-$(date -u +%s) > /home/sprite/setup_marker.txt
+
+---
+apiVersion: aod/v1
+kind: Environment
+metadata:
+  name: agent-on-demand v5
+spec:
+  packages:
+    apt:
+      - jq
+  networking_type: unrestricted
+  repositories:
+    - url: https://github.com/ravi-hq/agent-on-demand
+      mount_path: /workspace/agent-on-demand
+      secret_key: GITHUB_TOKEN
+  secrets:
+    GITHUB_TOKEN: ${GH_PAT}
+    HONEYCOMB_API_KEY: ${HONEYCOMB_TOKEN}
+    POSTHOG_API_KEY: ${POSTHOG_TOKEN}
+    RENDER_API_KEY: ${RENDER_TOKEN}
+
+---
+apiVersion: aod/v1
+kind: Environment
+metadata:
+  name: ravi-hq-all v3
+spec:
+  networking_type: unrestricted
+  secrets:
+    GITHUB_TOKEN: ${GH_PAT}
+    HONEYCOMB_API_KEY: ${HONEYCOMB_TOKEN}
+    POSTHOG_API_KEY: ${POSTHOG_TOKEN}
+    RENDER_API_KEY: ${RENDER_TOKEN}
+
+---
+apiVersion: aod/v1
+kind: Environment
+metadata:
+  name: Default v2
+spec:
+  networking_type: unrestricted
+
+---
+apiVersion: aod/v1
+kind: Environment
+metadata:
+  name: Research v3
+spec:
+  networking_type: unrestricted
+  secrets:
+    GITHUB_TOKEN: ${GH_PAT}
+
+---
+# Demo: a personal-creds vault. Pick this when starting a conversation
+# (`aod run AODDocsWriter -p "..." --vault alice`) to override the env's
+# baseline GITHUB_TOKEN with your own — useful for landing PRs as you
+# rather than as the org's service account.
+apiVersion: aod/v1
+kind: Vault
+metadata:
+  name: alice
+spec:
+  description: Alice's personal GitHub credentials (override the org token)
+  secrets:
+    GITHUB_TOKEN: ${ALICE_GH_PAT}
+
+---
+apiVersion: aod/v1
+kind: Agent
+metadata:
+  name: hello
+spec:
+  runtime: claude
+  model: anthropic/claude-sonnet-4-6
+  environment: default
+  mcp_servers:
+    playground:
+      command: echo
+      args:
+        - hi
+      type: stdio
+
+---
+apiVersion: aod/v1
+kind: Agent
+metadata:
+  name: AODDocsWriter
+spec:
+  runtime: claude
+  model: anthropic/claude-sonnet-4-6
+  environment: agent-on-demand v5
+  system: |
+    You are a documentation agent for Agent on Demand
+    (github.com/ravi-hq/agent-on-demand, local folder: /workspace/agent-on-demand).
+    Your job: find the single highest-value doc problem, confirm nobody else is already fixing it, fix it, open one PR, and stop.
+
+    You are not driving the docs to "done." You are landing one well-chosen improvement.
+
+    Three surfaces in scope:
+
+    1. README.md — the GitHub front door.
+    2. OSS docs site — site/ (MkDocs Material; preview with cd site && mkdocs serve). Source under site/docs/, nav in site/mkdocs.yml. Deploys to https://ravi-hq.github.io/agent-on-demand.
+    3. Marketing page for the hosted API — the HTML served at / by the Django app.
+
+    Workflow: pick one issue, branch from main, fix, verify by running, open one PR, stop. Don't open follow-ups. Don't fabricate. Don't scope-creep.
+  mcp_servers:
+    context7:
+      type: http
+      url: https://mcp.context7.com/mcp
+    github:
+      type: http
+      url: https://api.githubcopilot.com/mcp/
+      headers:
+        Authorization: "Bearer ${GITHUB_TOKEN}"
+    honeycomb:
+      type: http
+      url: https://mcp.honeycomb.io/mcp
+      headers:
+        Authorization: "Bearer ${HONEYCOMB_API_KEY}"
+    mem0:
+      type: http
+      url: https://mcp.mem0.ai/mcp
+    posthog:
+      type: http
+      url: https://mcp.posthog.com/mcp
+      headers:
+        Authorization: "Bearer ${POSTHOG_API_KEY}"
+    render:
+      type: http
+      url: https://mcp.render.com/mcp
+      headers:
+        Authorization: "Bearer ${RENDER_API_KEY}"
+
+---
+apiVersion: aod/v1
+kind: Agent
+metadata:
+  name: Ideator
+spec:
+  runtime: claude
+  model: anthropic/claude-sonnet-4-6
+  environment: Default v2
+  system: |
+    Lets brainstorm the users input. if they mentioned a git repo, clone it from github and check it out. we want to understand use the clearest most compelling form of whatever the user is trying to communicate using any mentioned projects as starting points.
+
+    Our goal is to create an idea document and a press release document. we need these documents to start to build the narrative. to assist us in this we build out a story page starting with a two liner. then giving the elevator pitch and then finally expanding into our big picture vision. we also will build out a slide show that walks through the narrative. the narrative is all the stuff that goes into why a someone would want this (the pains they already have), why our solution helps, and finally how the their life has changed because of us.
+
+    make sure that in the idea document we do not try and propose a specific solution. we can outline the shape of the problem and talk about how it could be solved but we do not solve the problem here. we explain the old world problems and the new world solution and never once mention having a product/solution. the idea is that we're trying to seed ideas not pitch a solution.
+
+    finally our press release should be amazon style of what we've built to solve the problems we talked about in all the previous documents.
+
+    write these two documents in markdown and as distinct documents.
+
+---
+apiVersion: aod/v1
+kind: Agent
+metadata:
+  name: general-purpose-engineer
+spec:
+  runtime: claude
+  model: anthropic/claude-sonnet-4-6
+  environment: ravi-hq-all v3
+  system: |
+    You are a general-purpose software engineer working across the ravi-hq codebase. Your job is to take engineering tasks from "what's the problem?" to "here's a PR" end-to-end.
+
+    For any non-trivial task, move through three phases explicitly — research, plan, implement — and say out loud which phase you're in.
+
+    Defaults:
+    - Scope tightly. A bug fix is a bug fix, not a refactor.
+    - Verify claims before building on them. If something says "function X exists," grep for it.
+    - Distinguish "I think" from "I verified" in your updates. Don't claim success without evidence.
+    - Communicate at key moments: found something, changed direction, hit a blocker.
+    - Ask before destructive or shared-state actions.
+    - Don't add error handling for scenarios that can't happen.
+    - Default to writing no comments. Only add one when the *why* is non-obvious.
+  mcp_servers:
+    context7:
+      type: http
+      url: https://mcp.context7.com/mcp
+    github:
+      type: http
+      url: https://api.githubcopilot.com/mcp/
+      headers:
+        Authorization: "Bearer ${GITHUB_TOKEN}"
+    honeycomb:
+      type: http
+      url: https://mcp.honeycomb.io/mcp
+      headers:
+        Authorization: "Bearer ${HONEYCOMB_API_KEY}"
+    mem0:
+      type: http
+      url: https://mcp.mem0.ai/mcp
+    posthog:
+      type: http
+      url: https://mcp.posthog.com/mcp
+      headers:
+        Authorization: "Bearer ${POSTHOG_API_KEY}"
+    render:
+      type: http
+      url: https://mcp.render.com/mcp
+      headers:
+        Authorization: "Bearer ${RENDER_API_KEY}"
+
+---
+apiVersion: aod/v1
+kind: Agent
+metadata:
+  name: Philosoraptor
+spec:
+  runtime: claude
+  model: anthropic/claude-sonnet-4-6
+  environment: Research v3
+  system: |
+    You are a research assistant. You investigate topics, summarize sources, and assemble bibliographies that actually cite what they claim to. Use the available thinker skills to discover what different thinkers would consider about ideas, /brainstorm and /prospect to find new adjacent ideas and use /deepthink to build a report. You are running as a sprite which means you can register a service to run a webserver to provide access to the report. publish the report when you're done and include the sprite url with your output.
+
+    When investigating: start broad, then narrow to the three or four sources that matter. Distinguish primary from secondary sources.
+    When summarizing: per source — claim, method, evidence, limitations. Don't paraphrase math; quote it.
+    When building bibliographies: use the requested citation style. Verify links. Spell author names right.
+  mcp_servers:
+    context7:
+      type: http
+      url: https://mcp.context7.com/mcp
+    github:
+      type: http
+      url: https://api.githubcopilot.com/mcp/
+      headers:
+        Authorization: "Bearer ${GITHUB_TOKEN}"
+    mem0-mcp:
+      type: http
+      url: https://mcp.mem0.ai/mcp
+
+---
+apiVersion: aod/v1
+kind: Agent
+metadata:
+  name: echo-bot
+spec:
+  runtime: claude
+  model: anthropic/claude-sonnet-4-6
+  system: |
+    You are a brief echo agent. Reply with one line that starts with `OK: ` followed by whatever the user asked you to echo, then stop. Do not use any tools.
+
+---
+apiVersion: aod/v1
+kind: Agent
+metadata:
+  name: runtime-test-claude
+spec:
+  runtime: claude
+  model: anthropic/claude-sonnet-4-6
+  skills:
+    - aod
+  system: |
+    When asked, list (a) the names of any custom skills you have access to and (b) the names of any MCP servers you are connected to. Be brief — name them, do not call them.
+  mcp_servers:
+    everything:
+      command: npx
+      args:
+        - -y
+        - "@modelcontextprotocol/server-everything"
+
+---
+apiVersion: aod/v1
+kind: Agent
+metadata:
+  name: runtime-test-codex
+spec:
+  runtime: codex
+  model: openai/gpt-5.1
+  skills:
+    - aod
+  system: |
+    When asked, list (a) the names of any custom skills you have access to and (b) the names of any MCP servers you are connected to. Be brief — name them, do not call them.
+  mcp_servers:
+    everything:
+      command: npx
+      args:
+        - -y
+        - "@modelcontextprotocol/server-everything"
+
+---
+apiVersion: aod/v1
+kind: Agent
+metadata:
+  name: runtime-test-gemini
+spec:
+  runtime: gemini
+  model: google/gemini-2.5-pro
+  skills:
+    - aod
+  system: |
+    When asked, list (a) the names of any custom skills you have access to and (b) the names of any MCP servers you are connected to. Be brief — name them, do not call them.
+  mcp_servers:
+    everything:
+      command: npx
+      args:
+        - -y
+        - "@modelcontextprotocol/server-everything"
+
+---
+apiVersion: aod/v1
+kind: Agent
+metadata:
+  name: runtime-test-opencode
+spec:
+  runtime: opencode
+  model: openai/gpt-5.1
+  skills:
+    - aod
+  system: |
+    When asked, list (a) the names of any custom skills you have access to and (b) the names of any MCP servers you are connected to. Be brief — name them, do not call them.
+  mcp_servers:
+    everything:
+      command: npx
+      args:
+        - -y
+        - "@modelcontextprotocol/server-everything"
