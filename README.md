@@ -14,6 +14,14 @@ Personal [Agent on Demand](https://github.com/ravi-hq/agent-on-demand-ex) specs 
 
 `aod apply` walks the directory recursively, picks up every `*.yml` / `*.yaml` doc that has both `apiVersion` and `kind`, and ignores everything else. So you can drop a CI workflow, a stray README front matter, or anything else in the tree without it being misinterpreted.
 
+## Install
+
+Download the `aod` CLI from the (private) [aod-ex releases](https://github.com/jhgaylor/aod-ex/releases) — requires `gh` authenticated against the repo:
+
+```bash
+gh release download v0.1.1 --repo jhgaylor/aod-ex --pattern 'aod-macos-aarch64' -O ~/.local/bin/aod --clobber && chmod +x ~/.local/bin/aod
+```
+
 ## Apply
 
 Secrets are pulled from Infisical (env=`dev`, root path) via the [Infisical CLI](https://infisical.com/docs/cli/overview). The `.infisical.json` in this repo binds it to the right project; sign in once and `./aod apply` resolves the rest.
