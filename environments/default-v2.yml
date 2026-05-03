@@ -1,0 +1,7 @@
+---
+apiVersion: aod/v1
+kind: Environment
+metadata:
+  name: Default v2
+spec:
+  networking_type: unrestricted

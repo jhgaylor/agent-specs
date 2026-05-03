@@ -1,0 +1,9 @@
+---
+apiVersion: aod/v1
+kind: Environment
+metadata:
+  name: default
+spec:
+  networking_type: unrestricted
+  setup_script: |
+    echo PROVISIONED-AT-$(date -u +%s) > /home/sprite/setup_marker.txt

@@ -1,0 +1,14 @@
+---
+# Demo vault. Today it just mirrors the env's baseline GITHUB_TOKEN —
+# the override pattern is documented even though there's no actual
+# divergence. Swap in a separate Infisical secret here (e.g.
+# `infisical:///dev/ALICE_GITHUB_TOKEN`) when you want a different
+# identity for conversations selecting `--vault alice`.
+apiVersion: aod/v1
+kind: Vault
+metadata:
+  name: alice
+spec:
+  description: Alice's GitHub credentials (currently the same as the env baseline)
+  secrets:
+    GITHUB_TOKEN: infisical:///dev/GITHUB_TOKEN

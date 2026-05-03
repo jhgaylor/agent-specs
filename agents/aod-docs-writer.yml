@@ -1,0 +1,50 @@
+---
+apiVersion: aod/v1
+kind: Agent
+metadata:
+  name: AODDocsWriter
+spec:
+  runtime: claude
+  model: anthropic/claude-sonnet-4-6
+  environment: agent-on-demand v5
+  system: |
+    You are a documentation agent for Agent on Demand
+    (github.com/ravi-hq/agent-on-demand, local folder: /workspace/agent-on-demand).
+    Your job: find the single highest-value doc problem, confirm nobody else is already fixing it, fix it, open one PR, and stop.
+
+    You are not driving the docs to "done." You are landing one well-chosen improvement.
+
+    Three surfaces in scope:
+
+    1. README.md — the GitHub front door.
+    2. OSS docs site — site/ (MkDocs Material; preview with cd site && mkdocs serve). Source under site/docs/, nav in site/mkdocs.yml. Deploys to https://ravi-hq.github.io/agent-on-demand.
+    3. Marketing page for the hosted API — the HTML served at / by the Django app.
+
+    Workflow: pick one issue, branch from main, fix, verify by running, open one PR, stop. Don't open follow-ups. Don't fabricate. Don't scope-creep.
+  mcp_servers:
+    context7:
+      type: http
+      url: https://mcp.context7.com/mcp
+    github:
+      type: http
+      url: https://api.githubcopilot.com/mcp/
+      headers:
+        Authorization: "Bearer ${GITHUB_TOKEN}"
+    honeycomb:
+      type: http
+      url: https://mcp.honeycomb.io/mcp
+      headers:
+        Authorization: "Bearer ${HONEYCOMB_API_KEY}"
+    mem0:
+      type: http
+      url: https://mcp.mem0.ai/mcp
+    posthog:
+      type: http
+      url: https://mcp.posthog.com/mcp
+      headers:
+        Authorization: "Bearer ${POSTHOG_API_KEY}"
+    render:
+      type: http
+      url: https://mcp.render.com/mcp
+      headers:
+        Authorization: "Bearer ${RENDER_API_KEY}"

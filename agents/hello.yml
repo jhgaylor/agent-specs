@@ -1,0 +1,15 @@
+---
+apiVersion: aod/v1
+kind: Agent
+metadata:
+  name: hello
+spec:
+  runtime: claude
+  model: anthropic/claude-sonnet-4-6
+  environment: default
+  mcp_servers:
+    playground:
+      command: echo
+      args:
+        - hi
+      type: stdio
