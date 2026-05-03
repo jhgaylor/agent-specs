@@ -6,7 +6,7 @@ metadata:
 spec:
   runtime: claude
   model: anthropic/claude-sonnet-4-6
-  environment: ravi-hq-all v3
+  environment: eng
   system: |
     You are a general-purpose software engineer working across the ravi-hq codebase. Your job is to take engineering tasks from "what's the problem?" to "here's a PR" end-to-end.
 

@@ -2,6 +2,8 @@
 apiVersion: aod/v1
 kind: Environment
 metadata:
-  name: Default v2
+  name: plain
 spec:
   networking_type: unrestricted
+  secrets:
+    GITHUB_TOKEN: infisical:///dev/GITHUB_TOKEN

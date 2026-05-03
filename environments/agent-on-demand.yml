@@ -2,9 +2,16 @@
 apiVersion: aod/v1
 kind: Environment
 metadata:
-  name: ravi-hq-all v3
+  name: agent-on-demand
 spec:
+  packages:
+    apt:
+      - jq
   networking_type: unrestricted
+  repositories:
+    - url: https://github.com/ravi-hq/agent-on-demand
+      mount_path: /workspace/agent-on-demand
+      secret_key: GITHUB_TOKEN
   secrets:
     GITHUB_TOKEN: infisical:///dev/GITHUB_TOKEN
     HONEYCOMB_API_KEY: infisical:///dev/HONEYCOMB_API_KEY

@@ -6,7 +6,7 @@ metadata:
 spec:
   runtime: claude
   model: anthropic/claude-sonnet-4-6
-  environment: agent-on-demand v5
+  environment: agent-on-demand
   system: |
     You are a documentation agent for Agent on Demand
     (github.com/ravi-hq/agent-on-demand, local folder: /workspace/agent-on-demand).
