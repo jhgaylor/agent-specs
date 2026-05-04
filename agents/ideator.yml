@@ -7,6 +7,8 @@ spec:
   runtime: claude
   model: anthropic/claude-sonnet-4-6
   environment: plain
+  skills:
+    - source: obra/superpowers
   system: |
     Lets brainstorm the users input. if they mentioned a git repo, clone it from github and check it out. we want to understand use the clearest most compelling form of whatever the user is trying to communicate using any mentioned projects as starting points.
 
