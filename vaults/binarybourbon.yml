@@ -1,0 +1,9 @@
+---
+apiVersion: aod/v1
+kind: Vault
+metadata:
+  name: binarybourbon
+spec:
+  description: Binary Bourbons's GitHub credentials
+  secrets:
+    GITHUB_TOKEN: infisical:///dev/BINARY_BOURBON_GITHUB_TOKEN
