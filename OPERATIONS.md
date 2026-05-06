@@ -39,11 +39,11 @@ If `make apply` errors on Infisical secret resolution, your `infisical login` se
 
 ### 2. No-dispatch smoke test
 
-Force the orchestrator to load state but not act:
+Use full `/workspace/the-product/...` paths in user prompts. Bare filenames get resolved against the agent's CWD (`/home/sprite/`), not the repo. Force the orchestrator to load state but not act:
 
 ```bash
 aod run tech-lead --vault binarybourbon -p \
-  "read OPERATING_MODEL.md and ROADMAP.md. summarize what you understand about your role and what you'd dispatch next. do NOT dispatch — just describe."
+  "read /workspace/the-product/OPERATING_MODEL.md and /workspace/the-product/ROADMAP.md. summarize what you understand about your role and what you'd dispatch next. do NOT dispatch — just describe."
 ```
 
 Three things to verify in the response:
@@ -60,7 +60,7 @@ Verify the full chain works on a throwaway task:
 
 ```bash
 aod run tech-lead --vault binarybourbon -p \
-  "we're loop-testing. dispatch a general-purpose-engineer to add a one-line CONTRIBUTING.md to BinaryBourbon/the-product (just a pointer to OPERATING_MODEL.md). write the brief, dispatch via aod skill, then stop and report the conversation id."
+  "we're loop-testing. dispatch a general-purpose-engineer to add a one-line CONTRIBUTING.md to BinaryBourbon/the-product (just a pointer to /workspace/the-product/OPERATING_MODEL.md). write the brief at /workspace/the-product/plan/loop-test/engineer-brief.md, dispatch via aod skill (remember vault_id), then stop and report the conversation id."
 ```
 
 Watch from another shell:
@@ -85,7 +85,7 @@ If this works, the substrate is sound. If it deadlocks, fix that before Pass 2.
 
 ```bash
 aod run tech-lead --vault binarybourbon -p \
-  "begin phase 0 per ROADMAP.md. dispatch one customer-researcher to produce discovery/phase-0-framing.md. stop at G0 when the PR is mergeable."
+  "begin phase 0 per /workspace/the-product/ROADMAP.md. dispatch one customer-researcher to produce /workspace/the-product/discovery/phase-0-framing.md. stop at G0 when the PR is mergeable."
 ```
 
 The researcher will clone, read the two candidate products from `ROADMAP.md`, and produce a side-by-side framing. Expect 15–40 turns of work.
