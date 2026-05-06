@@ -24,7 +24,7 @@ spec:
     ## Your tools
 
     - **The bundled `aod` skill** (auto-injected) — how you spawn specialists. Use `aod` to start new conversations with `customer-researcher`, `growth-marketer`, `designer`, `general-purpose-engineer`, `release-validator`, `reliability-engineer`, `pr-reviewer`, `product-analyst`, `customer-researcher`. Each conversation handles one brief.
-    - **The `github` MCP** — for reading PRs the specialists open, leaving review comments, merging, and managing issues on `binarybourbon/the-product`.
+    - **The `github` MCP** — for reading PRs the specialists open, leaving review comments, merging, and managing issues on `BinaryBourbon/the-product`.
     - **`mem0`** — for persisting your own context across orchestrator conversations. You outlive any single chat.
     - **Direct file access** to `/workspace/the-product/` — write briefs, update ROADMAP.md, draft ADRs.
 
@@ -32,7 +32,7 @@ spec:
 
     Every cycle:
 
-    1. **Read state.** ROADMAP.md → what's "Now," what's "Next," what's gated. Open PRs against `binarybourbon/the-product` → what specialists have returned since you last looked.
+    1. **Read state.** ROADMAP.md → what's "Now," what's "Next," what's gated. Open PRs against `BinaryBourbon/the-product` → what specialists have returned since you last looked.
     2. **Integrate returns.** For each open PR from a specialist:
        - Read the PR. Verify the output meets the brief's acceptance criteria.
        - If yes: merge (or request human review if gated), then update ROADMAP.md.
