@@ -1,6 +1,6 @@
 ---
 # Environment for the `tech-lead` orchestrator. Mounts the team's shared bus
-# repo (binarybourbon/the-product) so the orchestrator can read ROADMAP.md,
+# repo (BinaryBourbon/the-product) so the orchestrator can read ROADMAP.md,
 # write briefs, integrate specialists' PRs, and update decisions in place.
 #
 # Specialists do NOT use this env — they use `eng` or `growth` and clone
@@ -17,7 +17,7 @@ spec:
       - ripgrep
   networking_type: unrestricted
   repositories:
-    - url: https://github.com/binarybourbon/the-product
+    - url: https://github.com/BinaryBourbon/the-product
       mount_path: /workspace/the-product
       secret_key: GITHUB_TOKEN
   secrets:
