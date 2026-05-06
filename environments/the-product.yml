@@ -1,0 +1,27 @@
+---
+# Environment for the `tech-lead` orchestrator. Mounts the team's shared bus
+# repo (binarybourbon/the-product) so the orchestrator can read ROADMAP.md,
+# write briefs, integrate specialists' PRs, and update decisions in place.
+#
+# Specialists do NOT use this env — they use `eng` or `growth` and clone
+# the-product on demand from the brief the tech-lead hands them. That keeps
+# the per-role envs general-purpose.
+apiVersion: aod/v1
+kind: Environment
+metadata:
+  name: the-product
+spec:
+  packages:
+    apt:
+      - jq
+      - ripgrep
+  networking_type: unrestricted
+  repositories:
+    - url: https://github.com/binarybourbon/the-product
+      mount_path: /workspace/the-product
+      secret_key: GITHUB_TOKEN
+  secrets:
+    GITHUB_TOKEN: infisical:///dev/GITHUB_TOKEN
+    HONEYCOMB_API_KEY: infisical:///dev/HONEYCOMB_API_KEY
+    POSTHOG_API_KEY: infisical:///dev/POSTHOG_API_KEY
+    RENDER_API_KEY: infisical:///dev/RENDER_API_KEY
