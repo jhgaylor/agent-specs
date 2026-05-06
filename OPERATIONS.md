@@ -8,13 +8,17 @@ If you're new to the setup, read this first, then [`README.md`](./README.md) for
 
 The `the-product` environment mounts `BinaryBourbon/the-product`, but the env's baseline `GITHUB_TOKEN` is jhgaylor's (from `infisical:///dev/GITHUB_TOKEN`) — which has no write access to BinaryBourbon. Without the vault, the tech-lead can clone the repo (it's public) but cannot push branches, open PRs, or merge.
 
-The [`vaults/binarybourbon.yml`](./vaults/binarybourbon.yml) vault overrides `GITHUB_TOKEN` per conversation with a BinaryBourbon-scoped PAT. **Pass `--vault binarybourbon` on every `aod run` into this team** — otherwise the orchestrator (and the specialists it spawns through the bundled `aod` skill, which inherits the calling conversation's vault) will hit `Permission denied to jhgaylor`.
+The [`vaults/binarybourbon.yml`](./vaults/binarybourbon.yml) vault overrides `GITHUB_TOKEN` per conversation with a BinaryBourbon-scoped PAT. **Pass `--vault binarybourbon` on every `aod run` into this team** — otherwise the orchestrator hits `Permission denied to jhgaylor` on its first push.
 
 ```bash
 aod run tech-lead --vault binarybourbon -p "..."
 ```
 
-If you forget once, you'll see it immediately: the orchestrator's first `git push` fails. Re-run with the vault.
+### Vaults do not auto-inherit on spawn
+
+This is the non-obvious part. The `--vault` flag only sets the vault on the *one* conversation you're starting. When the orchestrator spawns a specialist via the bundled `aod` skill, the spawned conversation runs with its own env's baseline secrets unless the orchestrator explicitly includes `vault_id` in the spawn body.
+
+The tech-lead's system prompt instructs it to resolve the `binarybourbon` vault id once per conversation and pass `vault_id` on every spawn. If a specialist returns `Permission denied to jhgaylor` despite the orchestrator running with the right vault, the spawn was missing `vault_id` — push back on the orchestrator: `"check the spawn body — did you include vault_id?"`
 
 ## Pass 1 — boot + loop test
 
@@ -114,7 +118,7 @@ That's the rhythm: orchestrator runs, hits a gate, you decide, orchestrator runs
 - **Briefs are the quality lever.** If a specialist returns garbage, 8 times out of 10 the brief was vague. Read the brief in `plan/<slice>/<role>-brief.md` before blaming the specialist.
 - **Slice creep.** If `ROADMAP.md`'s "Now" grows past 2 entries or any single slice spans multiple specialist conversations, the orchestrator is over-decomposing the wrong dimension. Push back: `"this slice is too big — split it before dispatching."`
 - **First real bug will be in the system prompt, not the model.** Expect 1–2 iterations on `agents/tech-lead.yml` after Pass 1 reveals what the orchestrator actually misunderstands.
-- **Vault inheritance is load-bearing.** When the tech-lead spawns a specialist via the bundled `aod` skill, the spawned conversation inherits the vault. If you forgot `--vault binarybourbon` on the parent run, every child fails the same way.
+- **Vault propagation is manual, not automatic.** The orchestrator must include `vault_id` in every spawn body (see Authentication above). If a specialist hits `Permission denied to jhgaylor`, the spawn was missing `vault_id`, not the parent's `--vault` flag.
 
 ## Quick reference
 
