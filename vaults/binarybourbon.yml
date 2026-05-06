@@ -4,6 +4,13 @@ kind: Vault
 metadata:
   name: binarybourbon
 spec:
-  description: Binary Bourbons's GitHub credentials
+  description: Binary Bourbons's GitHub credentials and git identity
   secrets:
     GITHUB_TOKEN: infisical:///dev/BINARY_BOURBON_GITHUB_TOKEN
+    # Git identity env vars — git honors these above any user.name/email config.
+    # Using GitHub's no-reply email so commits attribute to BinaryBourbon
+    # without exposing a personal address.
+    GIT_AUTHOR_NAME: BinaryBourbon
+    GIT_AUTHOR_EMAIL: 214316198+BinaryBourbon@users.noreply.github.com
+    GIT_COMMITTER_NAME: BinaryBourbon
+    GIT_COMMITTER_EMAIL: 214316198+BinaryBourbon@users.noreply.github.com
