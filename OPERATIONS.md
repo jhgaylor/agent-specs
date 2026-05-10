@@ -117,8 +117,58 @@ That's the rhythm: orchestrator runs, hits a gate, you decide, orchestrator runs
 - **Skipped gates = catastrophe.** If the orchestrator dispatches past G0/G1/G2 without asking you, `aod conv interrupt <id>` and revise the system prompt (or push back in-conversation: `"you skipped G1. stop, summarize state, ask me."`).
 - **Briefs are the quality lever.** If a specialist returns garbage, 8 times out of 10 the brief was vague. Read the brief in `plan/<slice>/<role>-brief.md` before blaming the specialist.
 - **Slice creep.** If `ROADMAP.md`'s "Now" grows past 2 entries or any single slice spans multiple specialist conversations, the orchestrator is over-decomposing the wrong dimension. Push back: `"this slice is too big — split it before dispatching."`
-- **First real bug will be in the system prompt, not the model.** Expect 1–2 iterations on `agents/tech-lead.yml` after Pass 1 reveals what the orchestrator actually misunderstands.
+- **First real bug will be in the system prompt, not the model.** Expect 1–2 iterations on `agents/teams/the-product/tech-lead.yml` after Pass 1 reveals what the orchestrator actually misunderstands.
 - **Vault propagation is manual, not automatic.** The orchestrator must include `vault_id` in every spawn body (see Authentication above). If a specialist hits `Permission denied to jhgaylor`, the spawn was missing `vault_id`, not the parent's `--vault` flag.
+
+## Running the project-agnostic team
+
+The `tech-lead` agent above is hardcoded to `BinaryBourbon/the-product`. For any *other* product, use `product-tech-lead` + the `product-team` env. Same fleet of specialists, same dispatch + gate model, no manifest edit per new product.
+
+### Seed a vault for the project (once per project)
+
+The `product-team` env's baseline `GITHUB_TOKEN` is jhgaylor's — it can clone public repos but can't push to most. So before the first run against a new product, drop a vault file under `vaults/` that overrides `GITHUB_TOKEN` with a write-scoped PAT for that repo's owner. Mirror [`vaults/binarybourbon.yml`](./vaults/binarybourbon.yml):
+
+```yaml
+---
+apiVersion: aod/v1
+kind: Vault
+metadata:
+  name: <project-vault>
+spec:
+  description: <Owner>'s GitHub credentials and git identity
+  secrets:
+    GITHUB_TOKEN: infisical:///dev/<OWNER>_GITHUB_TOKEN
+    GIT_AUTHOR_NAME: <Owner>
+    GIT_AUTHOR_EMAIL: <id+owner>@users.noreply.github.com
+    GIT_COMMITTER_NAME: <Owner>
+    GIT_COMMITTER_EMAIL: <id+owner>@users.noreply.github.com
+```
+
+Add the matching secret in Infisical, `make apply`, confirm with `aod vault list | grep <project-vault>`.
+
+### Invoke the orchestrator
+
+The agent expects three things in your first prompt: `repo_url`, `vault_name`, and `operating_doc_path` (defaults to `OPERATING_MODEL.md`). It clones the repo on the first turn into `/workspace/<repo-name>` and treats it as the bus repo from there on.
+
+```bash
+aod run product-tech-lead --vault <project-vault> -p \
+  "repo_url=https://github.com/<owner>/<repo>
+   vault_name=<project-vault>
+   operating_doc_path=OPERATING_MODEL.md
+
+   begin phase 0 per ROADMAP.md. dispatch one customer-researcher to produce
+   discovery/phase-0-framing.md. stop at G0 when the PR is mergeable."
+```
+
+The `--vault <project-vault>` flag is for the orchestrator's own pushes; the matching `vault_name` line in the prompt is what the orchestrator uses to look up the vault id and pass `vault_id` on each spawn (same constraint as the BinaryBourbon flow above).
+
+### When to graduate to a named env
+
+Stick with the generic env until a product is sticky enough that re-cloning every conversation feels expensive, or until you want to shorten the operator prompt. Then copy [`environments/the-product.yml`](./environments/the-product.yml), point it at the new repo, and switch the orchestrator's invocation to `--env <project>`. The agent prompt is the same — it'll detect the mount and skip the clone if the working dir already exists.
+
+### Bus repo prerequisites
+
+`product-tech-lead` assumes the bus repo seeds the same operating model as `the-product`: an `OPERATING_MODEL.md` describing roles + gates + brief format, a `ROADMAP.md` with Now/Next/Gated lanes, and a `decisions/` directory for ADRs. A repo that's missing those will get bounced on STEP 0 with a request to frame the product first.
 
 ## Quick reference
 

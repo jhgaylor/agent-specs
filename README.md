@@ -8,7 +8,9 @@ Personal [Agent on Demand](https://github.com/ravi-hq/agent-on-demand-ex) specs 
 .
 ├── environments/      # one Environment per file
 ├── vaults/            # one Vault per file
-├── agents/            # one Agent per file
+├── agents/
+│   ├── teams/         # one folder per orchestrator (tech-lead, product-tech-lead, …)
+│   └── specialists/   # one folder per discipline (engineering, growth, design, …)
 └── .infisical.json    # binds this repo to the right Infisical project
 ```
 
