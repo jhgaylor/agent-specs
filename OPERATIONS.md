@@ -122,7 +122,7 @@ That's the rhythm: orchestrator runs, hits a gate, you decide, orchestrator runs
 
 ## Running the project-agnostic team
 
-The `tech-lead` agent above is hardcoded to `BinaryBourbon/the-product`. For any *other* product, use `product-tech-lead` + the `product-team` env. Same fleet of specialists, same dispatch + gate model, no manifest edit per new product.
+The `tech-lead` agent above is hardcoded to `BinaryBourbon/the-product`. For any *other* product, use `captain-picard` + the `product-team` env. Same fleet of specialists, same dispatch + gate model, no manifest edit per new product. The companion bus-repo template lives at [`jhgaylor/captain-picard-template`](https://github.com/jhgaylor/captain-picard-template) — click "Use this template" on GitHub and run the bundled `/bootstrap` skill in Claude Code to seed `OPERATING_MODEL.md` / `ROADMAP.md` / `decisions/` interactively.
 
 ### Seed a vault for the project (once per project)
 
@@ -151,7 +151,7 @@ Add the matching secret in Infisical, `make apply`, confirm with `aod vault list
 The agent expects three things in your first prompt: `repo_url`, `vault_name`, and `operating_doc_path` (defaults to `OPERATING_MODEL.md`). It clones the repo on the first turn into `/workspace/<repo-name>` and treats it as the bus repo from there on.
 
 ```bash
-aod run product-tech-lead --vault <project-vault> -p \
+aod run captain-picard --vault <project-vault> -p \
   "repo_url=https://github.com/<owner>/<repo>
    vault_name=<project-vault>
    operating_doc_path=OPERATING_MODEL.md
@@ -168,7 +168,7 @@ Stick with the generic env until a product is sticky enough that re-cloning ever
 
 ### Bus repo prerequisites
 
-`product-tech-lead` assumes the bus repo seeds the same operating model as `the-product`: an `OPERATING_MODEL.md` describing roles + gates + brief format, a `ROADMAP.md` with Now/Next/Gated lanes, and a `decisions/` directory for ADRs. A repo that's missing those will get bounced on STEP 0 with a request to frame the product first.
+`captain-picard` assumes the bus repo seeds the same operating model as `the-product`: an `OPERATING_MODEL.md` describing roles + gates + brief format, a `ROADMAP.md` with Now/Next/Gated lanes, and a `decisions/` directory for ADRs. A repo that's missing those will get bounced on STEP 0 with a request to frame the product first. The `captain-picard-template` repo seeds these with placeholders and the `/bootstrap` skill walks you through filling them in.
 
 ## Quick reference
 

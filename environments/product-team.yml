@@ -1,6 +1,6 @@
 ---
 # Generic environment for the project-agnostic product engineering team.
-# Mounts no repo — the `product-tech-lead` orchestrator clones the target
+# Mounts no repo — the `captain-picard` orchestrator clones the target
 # bus repo on demand from the URL in the operator's first prompt. Secret
 # surface mirrors `eng` so any product can use the same observability /
 # infra MCPs without per-project plumbing.
