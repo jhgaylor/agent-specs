@@ -1,6 +1,6 @@
-# aod-specs
+# agent-specs
 
-Personal [Agent on Demand](https://github.com/ravi-hq/agent-on-demand-ex) specs — agents, environments, vaults — kept independent of the AoD codebase so the same manifest can be applied against any AoD instance (local dev, hosted prod, a sprite I just spun up).
+Personal [Fountain](https://github.com/BinaryBourbon/fountain) specs — agents, environments, vaults — kept independent of the Fountain codebase so the same manifest can be applied against any Fountain instance (local dev, hosted prod, a sprite I just spun up).
 
 ## Layout
 
@@ -14,29 +14,47 @@ Personal [Agent on Demand](https://github.com/ravi-hq/agent-on-demand-ex) specs 
 └── .infisical.json    # binds this repo to the right Infisical project
 ```
 
-`aod apply` walks the directory recursively, picks up every `*.yml` / `*.yaml` doc that has both `apiVersion` and `kind`, and ignores everything else. So you can drop a CI workflow, a stray README front matter, or anything else in the tree without it being misinterpreted.
+`fountain apply` walks the directory recursively, picks up every `*.yml` / `*.yaml` doc that has both `apiVersion` and `kind`, and ignores everything else. So you can drop a CI workflow, a stray README front matter, or anything else in the tree without it being misinterpreted.
 
 ## Install
 
-Download the `aod` CLI from the (private) [aod-ex releases](https://github.com/jhgaylor/aod-ex/releases) — requires `gh` authenticated against the repo:
+Download the `fountain` CLI from the [latest release](https://github.com/BinaryBourbon/fountain/releases) (requires `gh`):
 
 ```bash
-gh release download v0.1.1 --repo jhgaylor/aod-ex --pattern 'aod-macos-aarch64' -O ~/.local/bin/aod --clobber && chmod +x ~/.local/bin/aod
+make install   # downloads fountain-darwin-arm64 to ~/.local/bin/fountain
 ```
+
+Or grab a binary directly:
+
+```bash
+curl -L -o ~/.local/bin/fountain \
+  https://github.com/BinaryBourbon/fountain/releases/latest/download/fountain-darwin-arm64
+chmod +x ~/.local/bin/fountain
+```
+
+Linux + amd64 variants are attached to the same release.
+
+## Authenticate
+
+Point the CLI at your Fountain instance once:
+
+```bash
+fountain auth login              # prompts for base URL + API key, writes ~/.fountain/credentials
+fountain auth whoami             # confirm
+```
+
+For multi-instance setups use named profiles: `fountain auth login --profile <name>`, then `FOUNTAIN_PROFILE=<name> make apply` (or pass `--profile`).
 
 ## Apply
 
-Secrets are pulled from Infisical (env=`dev`, root path) via the [Infisical CLI](https://infisical.com/docs/cli/overview). The `.infisical.json` in this repo binds it to the right project; sign in once and `./aod apply` resolves the rest.
+Secrets are pulled from Infisical (env=`dev`, root path) via the [Infisical CLI](https://infisical.com/docs/cli/overview). The `.infisical.json` in this repo binds it to the right project; sign in once and `make apply` resolves the rest.
 
 ```bash
-infisical login                    # one time
-
-# From the AoD project directory (so `./aod` is built):
-AOD_BASE_URL=http://localhost:4000 AOD_TOKEN=... \
-  ./aod apply /path/to/aod-specs/
+infisical login   # one time
+make apply        # → infisical run --env=dev -- fountain apply -f .
 ```
 
-If you need to override anything via local env or CLI flags, the `${VAR}` / `--var KEY=VAL` paths still work too. See `aod apply --help`.
+If you need to override anything via local env or CLI flags, the `${VAR}` / `--var KEY=VAL` paths still work too. See `fountain apply --help`.
 
 ## Two layers of `${VAR}` substitution
 
@@ -53,6 +71,6 @@ For `secrets:` you can also use other external resolvers if you have the relevan
 
 ## Adding / editing a resource
 
-Drop a new `*.yml` in the matching subdirectory. The filename is just for humans — the upsert key is `metadata.name` inside the file. Re-running `aod apply` reconciles in place.
+Drop a new `*.yml` in the matching subdirectory. The filename is just for humans — the upsert key is `metadata.name` inside the file. Re-running `make apply` reconciles in place.
 
-The format is documented in the AoD repo's [Manifest help page](https://github.com/ravi-hq/agent-on-demand-ex/blob/main/priv/help/manifest.md).
+The manifest format is documented in the Fountain repo's [help pages](https://github.com/BinaryBourbon/fountain/tree/main/apps/fountain/priv/help).

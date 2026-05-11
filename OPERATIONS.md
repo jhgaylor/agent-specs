@@ -8,15 +8,15 @@ If you're new to the setup, read this first, then [`README.md`](./README.md) for
 
 The `the-product` environment mounts `BinaryBourbon/the-product`, but the env's baseline `GITHUB_TOKEN` is jhgaylor's (from `infisical:///dev/GITHUB_TOKEN`) — which has no write access to BinaryBourbon. Without the vault, the tech-lead can clone the repo (it's public) but cannot push branches, open PRs, or merge.
 
-The [`vaults/binarybourbon.yml`](./vaults/binarybourbon.yml) vault overrides `GITHUB_TOKEN` per conversation with a BinaryBourbon-scoped PAT. **Pass `--vault binarybourbon` on every `aod run` into this team** — otherwise the orchestrator hits `Permission denied to jhgaylor` on its first push.
+The [`vaults/binarybourbon.yml`](./vaults/binarybourbon.yml) vault overrides `GITHUB_TOKEN` per conversation with a BinaryBourbon-scoped PAT. **Pass `--vault binarybourbon` on every `fountain run` into this team** — otherwise the orchestrator hits `Permission denied to jhgaylor` on its first push.
 
 ```bash
-aod run tech-lead --vault binarybourbon -p "..."
+fountain run tech-lead --vault binarybourbon -p "..."
 ```
 
 ### Vaults do not auto-inherit on spawn
 
-This is the non-obvious part. The `--vault` flag only sets the vault on the *one* conversation you're starting. When the orchestrator spawns a specialist via the bundled `aod` skill, the spawned conversation runs with its own env's baseline secrets unless the orchestrator explicitly includes `vault_id` in the spawn body.
+This is the non-obvious part. The `--vault` flag only sets the vault on the *one* conversation you're starting. When the orchestrator spawns a specialist via the bundled `fountain` skill, the spawned conversation runs with its own env's baseline secrets unless the orchestrator explicitly includes `vault_id` in the spawn body.
 
 The tech-lead's system prompt instructs it to resolve the `binarybourbon` vault id once per conversation and pass `vault_id` on every spawn. If a specialist returns `Permission denied to jhgaylor` despite the orchestrator running with the right vault, the spawn was missing `vault_id` — push back on the orchestrator: `"check the spawn body — did you include vault_id?"`
 
@@ -29,10 +29,10 @@ The goal of this pass is to verify the substrate works. Don't bet real product w
 From this repo's root:
 
 ```bash
-make apply                                # reconciles env, vault, and agent
-aod env list    | grep the-product        # should appear
-aod vault list  | grep binarybourbon      # should appear
-aod agent list  | grep tech-lead          # should appear
+make apply                                     # reconciles env, vault, and agent
+fountain env list    | grep the-product        # should appear
+fountain vault list  | grep binarybourbon      # should appear
+fountain agent list  | grep tech-lead          # should appear
 ```
 
 If `make apply` errors on Infisical secret resolution, your `infisical login` session lapsed — re-run it.
@@ -42,7 +42,7 @@ If `make apply` errors on Infisical secret resolution, your `infisical login` se
 Use full `/workspace/the-product/...` paths in user prompts. Bare filenames get resolved against the agent's CWD (`/home/sprite/`), not the repo. Force the orchestrator to load state but not act:
 
 ```bash
-aod run tech-lead --vault binarybourbon -p \
+fountain run tech-lead --vault binarybourbon -p \
   "read /workspace/the-product/OPERATING_MODEL.md and /workspace/the-product/ROADMAP.md. summarize what you understand about your role and what you'd dispatch next. do NOT dispatch — just describe."
 ```
 
@@ -59,15 +59,15 @@ If any of those is wrong, the system prompt or the bus repo needs tightening bef
 Verify the full chain works on a throwaway task:
 
 ```bash
-aod run tech-lead --vault binarybourbon -p \
-  "we're loop-testing. dispatch a general-purpose-engineer to add a one-line CONTRIBUTING.md to BinaryBourbon/the-product (just a pointer to /workspace/the-product/OPERATING_MODEL.md). write the brief at /workspace/the-product/plan/loop-test/engineer-brief.md, dispatch via aod skill (remember vault_id), then stop and report the conversation id."
+fountain run tech-lead --vault binarybourbon -p \
+  "we're loop-testing. dispatch a general-purpose-engineer to add a one-line CONTRIBUTING.md to BinaryBourbon/the-product (just a pointer to /workspace/the-product/OPERATING_MODEL.md). write the brief at /workspace/the-product/plan/loop-test/engineer-brief.md, dispatch via fountain skill (remember vault_id), then stop and report the conversation id."
 ```
 
 Watch from another shell:
 
 ```bash
-aod conv list --status RUNNING            # tech-lead + the spawned engineer
-aod conv stream <engineer-conv-id>        # tail the engineer's work
+fountain conv list --status RUNNING            # tech-lead + the spawned engineer
+fountain conv stream <engineer-conv-id>        # tail the engineer's work
 ```
 
 What you're verifying:
@@ -75,7 +75,7 @@ What you're verifying:
 - A brief was written under `plan/` in the bus repo.
 - The engineer cloned `BinaryBourbon/the-product` and pushed a branch.
 - A PR is open against `main`.
-- The tech-lead picks it up on a follow-up turn (you'll need to prompt: `aod conv prompt <tech-lead-id> -p "any specialists returned? integrate."`) and merges.
+- The tech-lead picks it up on a follow-up turn (you'll need to prompt: `fountain conv prompt <tech-lead-id> -p "any specialists returned? integrate."`) and merges.
 
 If this works, the substrate is sound. If it deadlocks, fix that before Pass 2.
 
@@ -84,7 +84,7 @@ If this works, the substrate is sound. If it deadlocks, fix that before Pass 2.
 ### 4. Begin framing
 
 ```bash
-aod run tech-lead --vault binarybourbon -p \
+fountain run tech-lead --vault binarybourbon -p \
   "begin phase 0 per /workspace/the-product/ROADMAP.md. dispatch one customer-researcher to produce /workspace/the-product/discovery/phase-0-framing.md. stop at G0 when the PR is mergeable."
 ```
 
@@ -95,7 +95,7 @@ The researcher will clone, read the two candidate products from `ROADMAP.md`, an
 When the researcher's PR is up, give the orchestrator a follow-up turn:
 
 ```bash
-aod conv prompt <tech-lead-id> -p \
+fountain conv prompt <tech-lead-id> -p \
   "the researcher's PR is open. review against the brief's acceptance criteria. if it's good, request my approval at G0; otherwise leave review comments and re-dispatch."
 ```
 
@@ -104,7 +104,7 @@ aod conv prompt <tech-lead-id> -p \
 The orchestrator stops and asks you to pick (or reframe). You read `discovery/phase-0-framing.md`, decide. Reply with the call:
 
 ```bash
-aod conv prompt <tech-lead-id> -p \
+fountain conv prompt <tech-lead-id> -p \
   "G0 decision: we're going with <option>. proceed to G1 — dispatch growth-marketer to draft the press-release narrative for it."
 ```
 
@@ -112,9 +112,9 @@ That's the rhythm: orchestrator runs, hits a gate, you decide, orchestrator runs
 
 ## Things to watch for
 
-- **The orchestrator is stateless across `aod run`s** except via mem0 + the bus repo. If you start a fresh `aod run tech-lead` instead of `aod conv prompt`-ing the existing one, it loses its working memory of what it just did. Resume existing conversations whenever possible.
-- **Leaked sprites cost money.** Run `aod conv list` periodically. `aod conv terminate <id>` for anything done.
-- **Skipped gates = catastrophe.** If the orchestrator dispatches past G0/G1/G2 without asking you, `aod conv interrupt <id>` and revise the system prompt (or push back in-conversation: `"you skipped G1. stop, summarize state, ask me."`).
+- **The orchestrator is stateless across `fountain run`s** except via mem0 + the bus repo. If you start a fresh `fountain run tech-lead` instead of `fountain conv prompt`-ing the existing one, it loses its working memory of what it just did. Resume existing conversations whenever possible.
+- **Leaked sprites cost money.** Run `fountain conv list` periodically. `fountain conv terminate <id>` for anything done.
+- **Skipped gates = catastrophe.** If the orchestrator dispatches past G0/G1/G2 without asking you, `fountain conv interrupt <id>` and revise the system prompt (or push back in-conversation: `"you skipped G1. stop, summarize state, ask me."`).
 - **Briefs are the quality lever.** If a specialist returns garbage, 8 times out of 10 the brief was vague. Read the brief in `plan/<slice>/<role>-brief.md` before blaming the specialist.
 - **Slice creep.** If `ROADMAP.md`'s "Now" grows past 2 entries or any single slice spans multiple specialist conversations, the orchestrator is over-decomposing the wrong dimension. Push back: `"this slice is too big — split it before dispatching."`
 - **First real bug will be in the system prompt, not the model.** Expect 1–2 iterations on `agents/teams/the-product/tech-lead.yml` after Pass 1 reveals what the orchestrator actually misunderstands.
@@ -130,7 +130,7 @@ The `product-team` env's baseline `GITHUB_TOKEN` is jhgaylor's — it can clone 
 
 ```yaml
 ---
-apiVersion: aod/v1
+apiVersion: fountain/v1
 kind: Vault
 metadata:
   name: <project-vault>
@@ -144,14 +144,14 @@ spec:
     GIT_COMMITTER_EMAIL: <id+owner>@users.noreply.github.com
 ```
 
-Add the matching secret in Infisical, `make apply`, confirm with `aod vault list | grep <project-vault>`.
+Add the matching secret in Infisical, `make apply`, confirm with `fountain vault list | grep <project-vault>`.
 
 ### Invoke the orchestrator
 
 The agent expects three things in your first prompt: `repo_url`, `vault_name`, and `operating_doc_path` (defaults to `OPERATING_MODEL.md`). It clones the repo on the first turn into `/workspace/<repo-name>` and treats it as the bus repo from there on.
 
 ```bash
-aod run captain-picard --vault <project-vault> -p \
+fountain run captain-picard --vault <project-vault> -p \
   "repo_url=https://github.com/<owner>/<repo>
    vault_name=<project-vault>
    operating_doc_path=OPERATING_MODEL.md
@@ -177,23 +177,23 @@ Stick with the generic env until a product is sticky enough that re-cloning ever
 make apply
 
 # Start a tech-lead conversation
-aod run tech-lead --vault binarybourbon -p "..."
+fountain run tech-lead --vault binarybourbon -p "..."
 
 # Resume an existing conversation (preserves working memory)
-aod conv prompt <conv-id> -p "..."
+fountain conv prompt <conv-id> -p "..."
 
 # Watch an agent work in real time
-aod conv stream <conv-id>
+fountain conv stream <conv-id>
 
 # List what's running
-aod conv list --status RUNNING
+fountain conv list --status RUNNING
 
 # Stop a runaway agent without killing the sprite
-aod conv interrupt <conv-id>
+fountain conv interrupt <conv-id>
 
 # Tear down a sprite when you're done
-aod conv terminate <conv-id>
+fountain conv terminate <conv-id>
 
 # Permanently delete a conversation + sprite
-aod conv delete <conv-id>
+fountain conv delete <conv-id>
 ```

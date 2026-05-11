@@ -4,7 +4,7 @@
 # divergence. Swap in a separate Infisical secret here (e.g.
 # `infisical:///dev/ALICE_GITHUB_TOKEN`) when you want a different
 # identity for conversations selecting `--vault alice`.
-apiVersion: aod/v1
+apiVersion: fountain/v1
 kind: Vault
 metadata:
   name: alice

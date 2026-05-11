@@ -6,7 +6,7 @@
 # Specialists do NOT use this env — they use `eng` or `growth` and clone
 # the-product on demand from the brief the tech-lead hands them. That keeps
 # the per-role envs general-purpose.
-apiVersion: aod/v1
+apiVersion: fountain/v1
 kind: Environment
 metadata:
   name: the-product
