@@ -4,7 +4,7 @@
 # these agents pull what they need from PostHog/Honeycomb/Render and write up
 # findings. Same secrets surface as `eng` so an analyst who needs to push a
 # write-up to a repo can still authenticate against GitHub.
-apiVersion: aod/v1
+apiVersion: fountain/v1
 kind: Environment
 metadata:
   name: growth

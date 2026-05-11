@@ -8,7 +8,7 @@
 # When a project gets sticky enough to warrant a permanent mount, copy this
 # file to `environments/<project>.yml`, add the `repositories:` block, and
 # point the orchestrator at the named env via `--env <project>`.
-apiVersion: aod/v1
+apiVersion: fountain/v1
 kind: Environment
 metadata:
   name: product-team

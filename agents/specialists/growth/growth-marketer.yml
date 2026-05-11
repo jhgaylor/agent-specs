@@ -1,5 +1,5 @@
 ---
-apiVersion: aod/v1
+apiVersion: fountain/v1
 kind: Agent
 metadata:
   name: growth-marketer
