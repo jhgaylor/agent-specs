@@ -1,0 +1,17 @@
+---
+apiVersion: fountain/v1
+kind: Environment
+metadata:
+  name: 3d-models
+spec:
+  packages:
+    apt:
+      - openscad
+      - jq
+  networking_type: unrestricted
+  repositories:
+    - url: https://github.com/jhgaylor/3d-models
+      mount_path: /workspace/3d-models
+      secret_key: GITHUB_TOKEN
+  secrets:
+    GITHUB_TOKEN: infisical:///dev/GITHUB_TOKEN
