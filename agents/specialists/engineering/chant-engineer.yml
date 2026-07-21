@@ -341,3 +341,10 @@ spec:
       url: https://api.githubcopilot.com/mcp/
       headers:
         Authorization: "Bearer ${GITHUB_TOKEN}"
+    # chant's own MCP server (stdio) — same package as the CLI, no separate
+    # install. Registered locally the first time `chant init` runs in a
+    # project (writes ~/.claude/mcp.json); declared here too so agents
+    # provisioned straight from this spec get it without running init first.
+    chant:
+      command: npx
+      args: ["chant", "serve", "mcp"]
