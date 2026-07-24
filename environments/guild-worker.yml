@@ -1,0 +1,23 @@
+---
+# Environment for the `guild-implementer` worker — Guild's autonomous
+# implementation agent (see jhgaylor/guild/agents/guild-implementer.yml).
+#
+# Mirrors `eng`: the Sprite base image provides the same Erlang/Elixir/mix/git
+# toolchain that the engineering specialists used to build Guild itself, so
+# the worker that ships Guild PRs needs nothing extra at the env level.
+# Separate env (rather than reusing `eng`) so Guild's runtime dependencies
+# can evolve without coupling to the generic engineering env.
+apiVersion: fountain/v1
+kind: Environment
+metadata:
+  name: guild-worker
+spec:
+  packages:
+    apt:
+      - jq
+  networking_type: unrestricted
+  secrets:
+    GITHUB_TOKEN: infisical:///dev/GITHUB_TOKEN
+    HONEYCOMB_API_KEY: infisical:///dev/HONEYCOMB_API_KEY
+    POSTHOG_API_KEY: infisical:///dev/POSTHOG_API_KEY
+    RENDER_API_KEY: infisical:///dev/RENDER_API_KEY
