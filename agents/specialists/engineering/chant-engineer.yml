@@ -347,4 +347,4 @@ spec:
     # provisioned straight from this spec get it without running init first.
     chant:
       command: npx
-      args: ["chant", "serve", "mcp"]
+      args: ["@intentius/chant", "serve", "mcp"]
