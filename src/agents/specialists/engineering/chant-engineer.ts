@@ -46,7 +46,7 @@ Defaults:
     chant: {
       command: "npx",
       args: [
-        "chant",
+        "@intentius/chant",
         "serve",
         "mcp",
       ],

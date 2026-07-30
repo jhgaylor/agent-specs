@@ -1,4 +1,6 @@
-INFISICAL := infisical run --env=dev --
+# Disable the CLI self-update notice: fountain captures infisical's output
+# when resolving infisical:// secret URIs, and the banner corrupts the values.
+INFISICAL := INFISICAL_DISABLE_UPDATE_CHECK=true infisical run --env=dev --
 
 .PHONY: apply run install
 
