@@ -8,7 +8,7 @@ If you're new to the setup, read this first, then [`README.md`](./README.md) for
 
 The `the-product` environment mounts `BinaryBourbon/the-product`, but the env's baseline `GITHUB_TOKEN` is jhgaylor's (from `infisical:///dev/GITHUB_TOKEN`) — which has no write access to BinaryBourbon. Without the vault, the tech-lead can clone the repo (it's public) but cannot push branches, open PRs, or merge.
 
-The [`vaults/binarybourbon.yml`](./vaults/binarybourbon.yml) vault overrides `GITHUB_TOKEN` per conversation with a BinaryBourbon-scoped PAT. **Pass `--vault binarybourbon` on every `fountain run` into this team** — otherwise the orchestrator hits `Permission denied to jhgaylor` on its first push.
+The [`src/vaults/binarybourbon.ts`](./src/vaults/binarybourbon.ts) vault overrides `GITHUB_TOKEN` per conversation with a BinaryBourbon-scoped PAT. **Pass `--vault binarybourbon` on every `fountain run` into this team** — otherwise the orchestrator hits `Permission denied to jhgaylor` on its first push.
 
 ```bash
 fountain run tech-lead --vault binarybourbon -p "..."
@@ -117,7 +117,7 @@ That's the rhythm: orchestrator runs, hits a gate, you decide, orchestrator runs
 - **Skipped gates = catastrophe.** If the orchestrator dispatches past G0/G1/G2 without asking you, `fountain conv interrupt <id>` and revise the system prompt (or push back in-conversation: `"you skipped G1. stop, summarize state, ask me."`).
 - **Briefs are the quality lever.** If a specialist returns garbage, 8 times out of 10 the brief was vague. Read the brief in `plan/<slice>/<role>-brief.md` before blaming the specialist.
 - **Slice creep.** If `ROADMAP.md`'s "Now" grows past 2 entries or any single slice spans multiple specialist conversations, the orchestrator is over-decomposing the wrong dimension. Push back: `"this slice is too big — split it before dispatching."`
-- **First real bug will be in the system prompt, not the model.** Expect 1–2 iterations on `agents/teams/the-product/tech-lead.yml` after Pass 1 reveals what the orchestrator actually misunderstands.
+- **First real bug will be in the system prompt, not the model.** Expect 1–2 iterations on `src/agents/teams/the-product/tech-lead.ts` after Pass 1 reveals what the orchestrator actually misunderstands.
 - **Vault propagation is manual, not automatic.** The orchestrator must include `vault_id` in every spawn body (see Authentication above). If a specialist hits `Permission denied to jhgaylor`, the spawn was missing `vault_id`, not the parent's `--vault` flag.
 
 ## Running the project-agnostic team
@@ -126,22 +126,23 @@ The `tech-lead` agent above is hardcoded to `BinaryBourbon/the-product`. For any
 
 ### Seed a vault for the project (once per project)
 
-The `product-team` env's baseline `GITHUB_TOKEN` is jhgaylor's — it can clone public repos but can't push to most. So before the first run against a new product, drop a vault file under `vaults/` that overrides `GITHUB_TOKEN` with a write-scoped PAT for that repo's owner. Mirror [`vaults/binarybourbon.yml`](./vaults/binarybourbon.yml):
+The `product-team` env's baseline `GITHUB_TOKEN` is jhgaylor's — it can clone public repos but can't push to most. So before the first run against a new product, drop a vault file under `src/vaults/` that overrides `GITHUB_TOKEN` with a write-scoped PAT for that repo's owner. Mirror [`src/vaults/binarybourbon.ts`](./src/vaults/binarybourbon.ts):
 
-```yaml
----
-apiVersion: fountain/v1
-kind: Vault
-metadata:
-  name: <project-vault>
-spec:
-  description: <Owner>'s GitHub credentials and git identity
-  secrets:
-    GITHUB_TOKEN: infisical:///dev/<OWNER>_GITHUB_TOKEN
-    GIT_AUTHOR_NAME: <Owner>
-    GIT_AUTHOR_EMAIL: <id+owner>@users.noreply.github.com
-    GIT_COMMITTER_NAME: <Owner>
-    GIT_COMMITTER_EMAIL: <id+owner>@users.noreply.github.com
+```ts
+import { Vault } from "@intentius/chant-lexicon-fountain";
+
+export const projectVault = new Vault({
+  name: "<project-vault>",
+  description: "<Owner>'s GitHub credentials and git identity",
+  secrets: [
+    { key: "GITHUB_TOKEN", value: "infisical:///dev/<OWNER>_GITHUB_TOKEN" },
+    { key: "GIT_AUTHOR_NAME", value: "<Owner>" },
+    { key: "GIT_AUTHOR_EMAIL", value: "<id+owner>@users.noreply.github.com" },
+    { key: "GIT_COMMITTER_NAME", value: "<Owner>" },
+    { key: "GIT_COMMITTER_EMAIL", value: "<id+owner>@users.noreply.github.com" },
+  ],
+  metadata: { "managed-by": "chant" },
+});
 ```
 
 Add the matching secret in Infisical, `make apply`, confirm with `fountain vault list | grep <project-vault>`.
@@ -164,7 +165,7 @@ The `--vault <project-vault>` flag is for the orchestrator's own pushes; the mat
 
 ### When to graduate to a named env
 
-Stick with the generic env until a product is sticky enough that re-cloning every conversation feels expensive, or until you want to shorten the operator prompt. Then copy [`environments/the-product.yml`](./environments/the-product.yml), point it at the new repo, and switch the orchestrator's invocation to `--env <project>`. The agent prompt is the same — it'll detect the mount and skip the clone if the working dir already exists.
+Stick with the generic env until a product is sticky enough that re-cloning every conversation feels expensive, or until you want to shorten the operator prompt. Then copy [`src/environments/the-product.ts`](./src/environments/the-product.ts), point it at the new repo, and switch the orchestrator's invocation to `--env <project>`. The agent prompt is the same — it'll detect the mount and skip the clone if the working dir already exists.
 
 ### Bus repo prerequisites
 

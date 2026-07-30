@@ -2,23 +2,32 @@
 
 Personal [Fountain](https://github.com/BinaryBourbon/fountain) specs — agents, environments, vaults — kept independent of the Fountain codebase so the same manifest can be applied against any Fountain instance (local dev, hosted prod, a sprite I just spun up).
 
+Declared as typed [chant](https://intentius.io/chant/) resources via the [fountain lexicon](https://intentius.io/chant/lexicons/fountain/) (`@intentius/chant-lexicon-fountain`) rather than hand-written YAML — real `import`/`export`, editor autocompletion, and build-time lint (dangling environment references, open networking, secret-shaped literals, etc.) before anything reaches the API.
+
 ## Layout
 
 ```
 .
-├── environments/      # one Environment per file
-├── vaults/            # one Vault per file
-├── agents/
-│   ├── teams/         # one folder per orchestrator (tech-lead, captain-picard, …)
-│   └── specialists/   # one folder per discipline (engineering, growth, design, …)
-└── .infisical.json    # binds this repo to the right Infisical project
+├── src/
+│   ├── environments/      # one Environment per file
+│   ├── vaults/            # one Vault per file
+│   └── agents/
+│       ├── teams/         # one folder per orchestrator (tech-lead, captain-picard, …)
+│       └── specialists/   # one folder per discipline (engineering, growth, design, …)
+├── chant.config.ts        # declares the fountain lexicon
+├── scripts/apply.mjs      # reconciles dist/fountain-plan.json against the API
+└── .infisical.json        # binds this repo to the right Infisical project
 ```
 
-`fountain apply` walks the directory recursively, picks up every `*.yml` / `*.yaml` doc that has both `apiVersion` and `kind`, and ignores everything else. So you can drop a CI workflow, a stray README front matter, or anything else in the tree without it being misinterpreted.
+`chant build` walks `src/`, type-checks and lints every declared `Environment` / `Vault` / `Agent`, and serializes them to `dist/fountain.yaml` (ejectable — `fountain apply -f dist/fountain.yaml` accepts it verbatim) plus a `dist/fountain-plan.json` sidecar that `scripts/apply.mjs` reconciles against the API directly.
 
 ## Install
 
-Download the `fountain` CLI from the [latest release](https://github.com/BinaryBourbon/fountain/releases) (requires `gh`):
+```bash
+npm install   # chant + the fountain lexicon
+```
+
+The `fountain` CLI itself is still needed for running conversations (`fountain run`, `fountain conv ...` — see below), not for applying this manifest:
 
 ```bash
 make install   # downloads fountain-darwin-arm64 to ~/.local/bin/fountain
@@ -36,14 +45,17 @@ Linux + amd64 variants are attached to the same release.
 
 ## Authenticate
 
-Point the CLI at your Fountain instance once:
+Two separate credentials, for two separate tools:
 
-```bash
-fountain auth login              # prompts for base URL + API key, writes ~/.fountain/credentials
-fountain auth whoami             # confirm
-```
+- **`scripts/apply.mjs` (reconciling this manifest)** needs `FOUNTAIN_TOKEN` (and `FOUNTAIN_ENDPOINT` if not the hosted default) as environment variables — mint one via `POST /api/auth/token` or the account UI. Add `FOUNTAIN_TOKEN` to Infisical (env=`dev`) so `make apply` picks it up the same way it already does for `GITHUB_TOKEN` etc., or export it locally.
+- **The `fountain` CLI (running conversations)** uses its own login, unrelated to the above:
 
-For multi-instance setups use named profiles: `fountain auth login --profile <name>`, then `FOUNTAIN_PROFILE=<name> make apply` (or pass `--profile`).
+  ```bash
+  fountain auth login              # prompts for base URL + API key, writes ~/.fountain/credentials
+  fountain auth whoami             # confirm
+  ```
+
+  For multi-instance setups use named profiles: `fountain auth login --profile <name>`, then `FOUNTAIN_PROFILE=<name> make run AGENT=... PROMPT=...` (or pass `--profile`).
 
 ## Apply
 
@@ -51,16 +63,17 @@ Secrets are pulled from Infisical (env=`dev`, root path) via the [Infisical CLI]
 
 ```bash
 infisical login   # one time
-make apply        # → infisical run --env=dev -- fountain apply -f .
+make apply        # → infisical run --env=dev -- npm run apply
+                   #   (chant build --output dist/fountain.yaml --format json && node scripts/apply.mjs)
 ```
 
-If you need to override anything via local env or CLI flags, the `${VAR}` / `--var KEY=VAL` paths still work too. See `fountain apply --help`.
+`npm run apply` is idempotent by name: create-if-new, update-by-name, and (opt-in, off by default) prune of chant-owned resources — every resource here carries the `managed-by: chant` metadata marker so ownership is unambiguous.
 
 ## Two layers of `${VAR}` substitution
 
 Same syntax, different scopes:
 
-1. **apply-time** — `secrets:` map values resolve from Infisical (`infisical://...`), local env, or `--var` flags. That's how this repo stays free of literal tokens.
+1. **apply-time** — `secrets:` entries resolve from Infisical (`infisical://...`), local env, or `--var` flags. That's how this repo stays free of literal tokens.
 2. **provision-time** — every other `${VAR}` (e.g. `mcp_servers` headers) resolves at sprite spawn from the environment's secrets ∪ the conversation's vault.
 
 For `secrets:` you can also use other external resolvers if you have the relevant CLI installed:
@@ -71,6 +84,19 @@ For `secrets:` you can also use other external resolvers if you have the relevan
 
 ## Adding / editing a resource
 
-Drop a new `*.yml` in the matching subdirectory. The filename is just for humans — the upsert key is `metadata.name` inside the file. Re-running `make apply` reconciles in place.
+Add or edit a `.ts` file in the matching `src/` subdirectory:
 
-The manifest format is documented in the Fountain repo's [help pages](https://github.com/BinaryBourbon/fountain/tree/main/apps/fountain/priv/help).
+```ts
+import { Environment } from "@intentius/chant-lexicon-fountain";
+
+export const env = new Environment({
+  name: "team-env",
+  networking_type: "limited",
+  networking_config: { allowed_hosts: ["github.com"] },
+  metadata: { "managed-by": "chant" },
+});
+```
+
+The filename is just for humans — the upsert key is the `name` passed to the constructor. Re-running `make apply` reconciles in place. `npx chant build` alone (no `--output`) is a fast way to lint a change without applying it.
+
+The lexicon's own reference (fields, lint rules, secrets model, locked-sandbox posture) lives at [intentius.io/chant/lexicons/fountain](https://intentius.io/chant/lexicons/fountain/); the underlying manifest format is documented in the Fountain repo's [help pages](https://github.com/BinaryBourbon/fountain/tree/main/apps/fountain/priv/help).
