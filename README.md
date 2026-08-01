@@ -15,11 +15,11 @@ Declared as typed [chant](https://intentius.io/chant/) resources via the [founta
 │       ├── teams/         # one folder per orchestrator (tech-lead, captain-picard, …)
 │       └── specialists/   # one folder per discipline (engineering, growth, design, …)
 ├── chant.config.ts        # declares the fountain lexicon
-├── scripts/apply.mjs      # reconciles dist/fountain-plan.json against the API
+├── scripts/apply.mjs      # applies dist/fountain.yaml via bulk POST /api/apply
 └── .infisical.json        # binds this repo to the right Infisical project
 ```
 
-`chant build` walks `src/`, type-checks and lints every declared `Environment` / `Vault` / `Agent`, and serializes them to `dist/fountain.yaml` (ejectable — `fountain apply -f dist/fountain.yaml` accepts it verbatim) plus a `dist/fountain-plan.json` sidecar that `scripts/apply.mjs` reconciles against the API directly.
+`chant build` walks `src/`, type-checks and lints every declared `Environment` / `Vault` / `Agent`, and serializes them to `dist/fountain.yaml` (ejectable — `fountain apply -f dist/fountain.yaml` accepts it verbatim). `scripts/apply.mjs` resolves the manifest's `infisical://` secret URIs from the environment and sends it through fountain's bulk `POST /api/apply`.
 
 ## Install
 

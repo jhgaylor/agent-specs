@@ -3,12 +3,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "chant build --output dist/fountain.yaml --format json",
+    "build": "rm -rf dist && chant build --output dist/fountain.yaml --format json",
     "apply": "npm run build && npx tsx scripts/apply.mjs"
   },
   "devDependencies": {
-    "@intentius/chant": "^0.33.0",
-    "@intentius/chant-lexicon-fountain": "^0.33.0",
-    "typescript": "^5.9.3"
+    "@intentius/chant": "^0.33.1",
+    "@intentius/chant-lexicon-fountain": "^0.33.1",
+    "typescript": "^5.9.3",
+    "yaml": "^2.9.0"
   }
 }
