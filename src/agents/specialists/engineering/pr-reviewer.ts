@@ -1,7 +1,7 @@
 import { Agent } from "@intentius/chant-lexicon-fountain";
 import { eng } from "../../../environments/eng";
 
-export const prReviewer = new Agent({
+const prReviewer = new Agent({
   name: "pr-reviewer",
   runtime: "claude",
   model: "anthropic/claude-sonnet-4-6",
@@ -71,3 +71,5 @@ Defaults:
     "managed-by": "chant",
   },
 });
+
+export { prReviewer as "pr-reviewer" };

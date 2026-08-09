@@ -1,7 +1,7 @@
 import { Agent } from "@intentius/chant-lexicon-fountain";
-import { theProduct } from "../../../environments/the-product";
+import { "the-product" as theProduct } from "../../../environments/the-product";
 
-export const techLead = new Agent({
+const techLead = new Agent({
   name: "tech-lead",
   runtime: "claude",
   model: "anthropic/claude-opus-4-7",
@@ -165,3 +165,5 @@ Every cycle (driven by the human prompting you, not by polling):
     "managed-by": "chant",
   },
 });
+
+export { techLead as "tech-lead" };

@@ -1,7 +1,7 @@
 import { Agent } from "@intentius/chant-lexicon-fountain";
-import { threeDModels } from "../../../environments/3d-models";
+import { "3d-models" as threeDModels } from "../../../environments/3d-models";
 
-export const openscadModeler = new Agent({
+const openscadModeler = new Agent({
   name: "openscad-modeler",
   runtime: "claude",
   model: "anthropic/claude-sonnet-4-6",
@@ -66,3 +66,5 @@ Defaults:
     "managed-by": "chant",
   },
 });
+
+export { openscadModeler as "openscad-modeler" };

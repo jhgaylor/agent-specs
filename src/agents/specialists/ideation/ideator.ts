@@ -2,7 +2,7 @@ import { Agent } from "@intentius/chant-lexicon-fountain";
 import { plain } from "../../../environments/plain";
 
 export const ideator = new Agent({
-  name: "Ideator",
+  name: "ideator",
   runtime: "claude",
   model: "anthropic/claude-sonnet-4-6",
   environment: plain,

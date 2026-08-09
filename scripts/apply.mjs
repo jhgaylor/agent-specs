@@ -37,7 +37,13 @@ if (leftover) {
   throw new Error(`unresolved secret reference in manifest: ${leftover[0]}`);
 }
 
-const summary = await fountainApply({ manifestContent: resolved });
+// Prune deletes chant-owned resources (`managed-by: chant`) that the manifest
+// no longer declares. Off unless asked for: an incomplete build would
+// otherwise read as "delete everything I didn't emit". Hand-made resources
+// carry no ownership marker and are never touched.
+const prune = process.env.PRUNE === "1" || process.argv.includes("--prune");
+
+const summary = await fountainApply({ manifestContent: resolved, prune });
 
 console.log(`created: ${summary.created.length}`);
 for (const name of summary.created) console.log(`  + ${name}`);

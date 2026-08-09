@@ -1,7 +1,7 @@
 import { Agent } from "@intentius/chant-lexicon-fountain";
 import { growth } from "../../../environments/growth";
 
-export const productAnalyst = new Agent({
+const productAnalyst = new Agent({
   name: "product-analyst",
   runtime: "claude",
   model: "anthropic/claude-sonnet-4-6",
@@ -68,3 +68,5 @@ Defaults:
     "managed-by": "chant",
   },
 });
+
+export { productAnalyst as "product-analyst" };

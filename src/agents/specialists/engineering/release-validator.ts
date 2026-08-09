@@ -1,7 +1,7 @@
 import { Agent } from "@intentius/chant-lexicon-fountain";
 import { eng } from "../../../environments/eng";
 
-export const releaseValidator = new Agent({
+const releaseValidator = new Agent({
   name: "release-validator",
   runtime: "claude",
   model: "anthropic/claude-sonnet-4-6",
@@ -80,3 +80,5 @@ Defaults:
     "managed-by": "chant",
   },
 });
+
+export { releaseValidator as "release-validator" };

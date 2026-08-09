@@ -8,7 +8,7 @@ import { Environment } from "@intentius/chant-lexicon-fountain";
 // the worker that ships Guild PRs needs nothing extra at the env level.
 // Separate env (rather than reusing `eng`) so Guild's runtime dependencies
 // can evolve without coupling to the generic engineering env.
-export const guildWorker = new Environment({
+const guildWorker = new Environment({
   name: "guild-worker",
   packages: {
     apt: [
@@ -38,3 +38,5 @@ export const guildWorker = new Environment({
     "managed-by": "chant",
   },
 });
+
+export { guildWorker as "guild-worker" };

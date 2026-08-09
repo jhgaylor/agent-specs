@@ -69,6 +69,12 @@ make apply        # → infisical run --env=dev -- npm run apply
 
 `npm run apply` is idempotent by name: create-if-new, update-by-name, and (opt-in, off by default) prune of chant-owned resources — every resource here carries the `managed-by: chant` metadata marker so ownership is unambiguous.
 
+Prune deletes chant-owned resources the manifest no longer declares; hand-made resources have no ownership marker and are never touched. It's off by default so a partial build can't read as "delete everything I didn't emit":
+
+```bash
+PRUNE=1 make apply
+```
+
 ## Two layers of `${VAR}` substitution
 
 Same syntax, different scopes:
@@ -89,14 +95,20 @@ Add or edit a `.ts` file in the matching `src/` subdirectory:
 ```ts
 import { Environment } from "@intentius/chant-lexicon-fountain";
 
-export const env = new Environment({
+const env = new Environment({
   name: "team-env",
   networking_type: "limited",
   networking_config: { allowed_hosts: ["github.com"] },
   metadata: { "managed-by": "chant" },
 });
+
+export { env as "team-env" };
 ```
 
-The filename is just for humans — the upsert key is the `name` passed to the constructor. Re-running `make apply` reconciles in place. `npx chant build` alone (no `--output`) is a fast way to lint a change without applying it.
+**The export name is the upsert key — always export under the resource's own name.** chant derives each resource's logical name from the exporting identifier, and that logical name (not the `name` you pass to the constructor) is what `fountainApply` sends as the upsert key and what cross-resource references serialize to. Since a fountain name like `team-env` isn't a valid JS identifier, bind the constructor to a camelCase `const` and re-export it under the literal name; importers use the matching `import { "team-env" as env } from "…"`.
+
+Nothing upstream catches a mismatch — exporting as `export const teamEnv = …` type-checks, lints, and applies cleanly, it just creates a *second* resource named `teamEnv` alongside `team-env` instead of updating it. The whole estate diverged that way once, so `scripts/check-names.mjs` runs as part of `npm run build` and fails the build (and therefore the apply) if any resource's export name and declared name disagree.
+
+The filename is just for humans. Re-running `make apply` reconciles in place. `npx chant build` alone (no `--output`) is a fast way to lint a change without applying it.
 
 The lexicon's own reference (fields, lint rules, secrets model, locked-sandbox posture) lives at [intentius.io/chant/lexicons/fountain](https://intentius.io/chant/lexicons/fountain/); the underlying manifest format is documented in the Fountain repo's [help pages](https://github.com/BinaryBourbon/fountain/tree/main/apps/fountain/priv/help).

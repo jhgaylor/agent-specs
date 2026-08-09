@@ -1,7 +1,7 @@
 import { Agent } from "@intentius/chant-lexicon-fountain";
 import { fountain } from "../../../environments/fountain";
 
-export const fountainDocsWriter = new Agent({
+const fountainDocsWriter = new Agent({
   name: "fountain-docs-writer",
   runtime: "claude",
   model: "anthropic/claude-sonnet-4-6",
@@ -70,3 +70,5 @@ Workflow: pick one issue, branch from main, fix, verify by running (build/lint i
     "managed-by": "chant",
   },
 });
+
+export { fountainDocsWriter as "fountain-docs-writer" };

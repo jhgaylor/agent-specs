@@ -1,6 +1,6 @@
 import { Environment, Repository } from "@intentius/chant-lexicon-fountain";
 
-export const threeDModels = new Environment({
+const threeDModels = new Environment({
   name: "3d-models",
   packages: {
     apt: [
@@ -26,3 +26,5 @@ export const threeDModels = new Environment({
     "managed-by": "chant",
   },
 });
+
+export { threeDModels as "3d-models" };

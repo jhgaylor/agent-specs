@@ -1,7 +1,7 @@
 import { Agent } from "@intentius/chant-lexicon-fountain";
-import { productTeam } from "../../../environments/product-team";
+import { "product-team" as productTeam } from "../../../environments/product-team";
 
-export const captainPicard = new Agent({
+const captainPicard = new Agent({
   name: "captain-picard",
   runtime: "claude",
   model: "anthropic/claude-opus-4-7",
@@ -190,3 +190,5 @@ Every cycle (driven by the operator prompting you, not by polling):
     "managed-by": "chant",
   },
 });
+
+export { captainPicard as "captain-picard" };

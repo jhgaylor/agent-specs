@@ -1,6 +1,6 @@
 import { Environment } from "@intentius/chant-lexicon-fountain";
 
-export const productTeam = new Environment({
+const productTeam = new Environment({
   name: "product-team",
   packages: {
     apt: [
@@ -31,3 +31,5 @@ export const productTeam = new Environment({
     "managed-by": "chant",
   },
 });
+
+export { productTeam as "product-team" };

@@ -1,7 +1,7 @@
 import { Agent } from "@intentius/chant-lexicon-fountain";
 import { chant } from "../../../environments/chant";
 
-export const chantEngineer = new Agent({
+const chantEngineer = new Agent({
   name: "chant-engineer",
   runtime: "claude",
   model: "anthropic/claude-sonnet-4-6",
@@ -56,3 +56,5 @@ Defaults:
     "managed-by": "chant",
   },
 });
+
+export { chantEngineer as "chant-engineer" };
