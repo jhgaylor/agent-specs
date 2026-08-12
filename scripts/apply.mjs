@@ -16,6 +16,12 @@ import { fountainApply } from "@intentius/chant-lexicon-fountain";
 // (JSON.stringify output is a valid YAML double-quoted scalar.)
 const manifest = readFileSync("dist/fountain.yaml", "utf8");
 
+// Keys we substituted, so the preflight below can validate the credentials
+// we're about to write into fountain — a dead token upserts silently and
+// only fails hours later inside an agent's sandbox (seen live: a revoked
+// GitHub PAT in the jhgaylor vault stalled a whole incident run).
+const usedKeys = new Set();
+
 const resolved = manifest.replace(
   /"infisical:\/\/\/([^/"]+)\/([A-Za-z0-9_]+)"/g,
   (uri, envName, key) => {
@@ -26,9 +32,34 @@ const resolved = manifest.replace(
           `environment — run via \`make apply\` so infisical injects it`,
       );
     }
+    usedKeys.add(key);
     return JSON.stringify(value);
   },
 );
+
+// Preflight: any GitHub token we're about to store must actually authenticate.
+// Skippable (SKIP_TOKEN_PREFLIGHT=1) for offline applies, but on by default —
+// catching a revoked PAT here costs one API call; catching it in production
+// costs a stalled agent and a confusing debug session.
+if (process.env.SKIP_TOKEN_PREFLIGHT !== "1") {
+  const githubKeys = [...usedKeys].filter((k) => k.includes("GITHUB_TOKEN"));
+  for (const key of githubKeys) {
+    const res = await fetch("https://api.github.com/user", {
+      headers: { Authorization: `Bearer ${process.env[key]}`, "User-Agent": "agent-specs-apply" },
+    }).catch((e) => {
+      throw new Error(`token preflight: ${key} — network error reaching GitHub: ${e.message}`);
+    });
+    if (!res.ok) {
+      throw new Error(
+        `token preflight: ${key} failed GitHub auth (${res.status}). The value in ` +
+          `infisical /dev is dead — mint a fresh PAT, \`infisical secrets set ${key}=…\`, ` +
+          `then re-run. (SKIP_TOKEN_PREFLIGHT=1 to bypass.)`,
+      );
+    }
+    const login = (await res.json()).login;
+    console.log(`token preflight: ${key} → GitHub user ${login} ✓`);
+  }
+}
 
 // The serializer double-quotes URI-shaped strings today; if that ever
 // changes, fail here rather than uploading a literal infisical:// URI.
