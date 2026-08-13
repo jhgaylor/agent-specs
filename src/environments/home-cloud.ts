@@ -5,11 +5,11 @@ import { Environment } from "@intentius/chant-lexicon-fountain";
 // credentials and no kubectl — the only write path out of this environment
 // is a GitHub pull request.
 //
-// BEHOLD_PROXY_TOKEN must match the bearer token on the behold proxy
-// (phase 2: scripts/proxy.mjs on the workstation; phase 3: the in-cluster
-// GET-only proxy). BEHOLD_URL arrives in the dispatch prompt while the
-// tunnel URL is still minted per-run; it moves in here once behold has a
-// stable hostname.
+// BEHOLD_PROXY_TOKEN must match the bearer token on the in-cluster GET-only
+// proxy (apps/behold in home-cloud). BEHOLD_URL is now the stable public
+// hostname of that proxy — the per-run cloudflared quick tunnel is retired,
+// so the dispatch prompt no longer mints a URL. The agent reads BEHOLD_URL
+// straight from its environment.
 const homeCloud = new Environment({
   name: "home-cloud",
   packages: {
@@ -20,6 +20,10 @@ const homeCloud = new Environment({
     {
       key: "BEHOLD_PROXY_TOKEN",
       value: "infisical:///dev/BEHOLD_PROXY_TOKEN",
+    },
+    {
+      key: "BEHOLD_URL",
+      value: "https://behold-agent.inevitable.fyi",
     },
   ],
   metadata: {

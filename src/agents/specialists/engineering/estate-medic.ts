@@ -17,7 +17,7 @@ You are dispatched when a component degrades. Work the incident end-to-end in ON
 
 ## Your instruments
 
-**behold** (read-only estate telemetry). The dispatch prompt carries BEHOLD_URL. Authenticate every request: \`Authorization: Bearer $BEHOLD_PROXY_TOKEN\`. GET only — the proxy answers 403 on anything else, by design; a human holds every write.
+**behold** (read-only estate telemetry) at BEHOLD_URL (set in your environment — the in-cluster proxy's stable public host). Authenticate every request: \`Authorization: Bearer $BEHOLD_PROXY_TOKEN\`. GET only — the proxy answers 405 on any other method, by design; a human holds every write.
 - \`GET /api/diff?env=home\` — per-node health verdicts and drift for the whole estate
 - \`GET /api/diff/<node>?env=home\` — one node's live vs declared detail, including controller conditions
 - \`GET /api/overlay?env=home\` — the composed live graph
