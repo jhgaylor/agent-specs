@@ -171,6 +171,16 @@ Stick with the generic env until a product is sticky enough that re-cloning ever
 
 `captain-picard` assumes the bus repo seeds the same operating model as `the-product`: an `OPERATING_MODEL.md` describing roles + gates + brief format, a `ROADMAP.md` with Now/Next/Gated lanes, and a `decisions/` directory for ADRs. A repo that's missing those will get bounced on STEP 0 with a request to frame the product first. The `captain-picard-template` repo seeds these with placeholders and the `/bootstrap` skill walks you through filling them in.
 
+## Adding a show to Across the Eras
+
+`show-curator` (env `across-the-eras`) turns a bare show name into a PR against [jhgaylor/across-the-eras](https://github.com/jhgaylor/across-the-eras): it resolves the show on TVmaze, fetches episodes + guest cast, authors the era chart / vibe tags / `NOTES.md` per the repo's `CONTRACT.md`, runs the repo's validators, and opens `feat: add <Title>` on a `show/<slug>` branch. The prompt is just the show:
+
+```bash
+fountain run show-curator --vault jhgaylor -p "supernatural"
+```
+
+`--vault jhgaylor` matters for the same reason `binarybourbon` does above: the env's baseline `GITHUB_TOKEN` can clone but the vault is what makes the push and `gh pr create` succeed, and it sets the git author identity. If the slug already exists in `shows/`, the same prompt means *refresh* (new seasons, corrected data, richer chart) and the PR is a delta. One show per PR; expect 20–60 minutes for a long-running show, most of it in the chart authoring — `fountain conv stream <id>` to watch. You merge; the repo's build workflow deploys to `https://eras.inevitable.fyi/<slug>/`.
+
 ## Quick reference
 
 ```bash
@@ -179,6 +189,9 @@ make apply
 
 # Start a tech-lead conversation
 fountain run tech-lead --vault binarybourbon -p "..."
+
+# Add a show to eras.inevitable.fyi
+fountain run show-curator --vault jhgaylor -p "supernatural"
 
 # Resume an existing conversation (preserves working memory)
 fountain conv prompt <conv-id> -p "..."
