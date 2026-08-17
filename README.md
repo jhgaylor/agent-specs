@@ -13,7 +13,7 @@ Declared as typed [chant](https://intentius.io/chant/) resources via the [founta
 │   ├── vaults/            # one Vault per file
 │   └── agents/
 │       ├── teams/         # one folder per orchestrator (tech-lead, captain-picard, …)
-│       └── specialists/   # one folder per discipline (engineering, growth, design, …)
+│       └── specialists/   # one folder per discipline (engineering, growth, design, content, …)
 ├── chant.config.ts        # declares the fountain lexicon
 ├── scripts/apply.mjs      # applies dist/fountain.yaml via bulk POST /api/apply
 └── .infisical.json        # binds this repo to the right Infisical project
