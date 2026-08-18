@@ -181,6 +181,24 @@ fountain run show-curator --vault jhgaylor -p "supernatural"
 
 `--vault jhgaylor` matters for the same reason `binarybourbon` does above: the env's baseline `GITHUB_TOKEN` can clone but the vault is what makes the push and `gh pr create` succeed, and it sets the git author identity. If the slug already exists in `shows/`, the same prompt means *refresh* (new seasons, corrected data, richer chart) and the PR is a delta. One show per PR; expect 20–60 minutes for a long-running show, most of it in the chart authoring — `fountain conv stream <id>` to watch. You merge; the repo's build workflow deploys to `https://eras.inevitable.fyi/<slug>/`.
 
+## Building an app for the homelab
+
+`homelab-builder` (env `homelab`) turns "I want a BLAH that deploys to Jake's homelab" into two deliverables: a new repo `BinaryBourbon/<name>` (app code, Dockerfile, a multi-arch GHCR build workflow that sha-pins the image into `k8s/deployment.yaml`, and the `k8s/` manifests written the way every other estate app writes them — Traefik `IngressRoute` + cert-manager `Certificate`, Longhorn PVCs, a CNPG `Cluster` for Postgres, an `InfisicalSecret` for runtime secrets, or a tailnet-only Tailscale Ingress) plus a PR against [jhgaylor/home-cloud](https://github.com/jhgaylor/home-cloud) that adds the `gitSource` + `appKustomization` pair to `chant/src/apps.ts` and the regenerated control-plane manifest. It has no kubectl and no cluster credentials — Flux deploys on merge.
+
+```bash
+fountain run homelab-builder -p \
+  "i want a small web app that tracks which board games i own and who borrowed them. postgres, public at boardgames.inevitable.fyi behind github login."
+```
+
+No `--vault` needed: the `homelab` env's `GITHUB_TOKEN` is BinaryBourbon's (`infisical:///dev/BINARY_BOURBON_GITHUB_TOKEN`), which owns the new repo and has write on home-cloud. Say the exposure you want (public / tailnet-only / behind `github-auth`) and the state it needs; if you don't, the agent picks the safer default and says so.
+
+The PR body is the handoff. Two things the agent cannot do and will list as checkboxes for you:
+
+- **Infisical** (only if the app has runtime secrets): create the project + `<name>-operator` machine identity on magpie (`/add-secret-via-infisical` in home-cloud), then give the agent the `identityId` and `projectSlug` — the manifests ship with `REPLACE_ME_*` placeholders — via `fountain conv prompt <id> -p "identityId=… projectSlug=…"` and it commits the fix-up.
+- **DNS** (public apps): the Cloudflare A record for `<name>.inevitable.fyi`, grey-cloud.
+
+You merge; Flux reconciles within ~10 minutes (or instantly if you also wire the app repo's push webhook into `platform/flux-webhooks/receiver.yaml`, which the agent adds to the PR when asked). If something is unhealthy after merge, `fountain conv prompt <id> -p "merged; <symptom>"` — it fixes forward in the same two repos. For a fault in an already-deployed app, `estate-medic` is the right agent, not this one.
+
 ## Quick reference
 
 ```bash
@@ -192,6 +210,9 @@ fountain run tech-lead --vault binarybourbon -p "..."
 
 # Add a show to eras.inevitable.fyi
 fountain run show-curator --vault jhgaylor -p "supernatural"
+
+# Build + onboard a new app into the homelab (opens a home-cloud PR)
+fountain run homelab-builder -p "i want a BLAH that deploys to jakes homelab"
 
 # Resume an existing conversation (preserves working memory)
 fountain conv prompt <conv-id> -p "..."
