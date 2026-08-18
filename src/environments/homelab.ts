@@ -13,6 +13,15 @@ import { Environment, Repository } from "@intentius/chant-lexicon-fountain";
 // to run this agent. The git identity entries mirror src/vaults/binarybourbon.ts
 // (same keys, carried as env secrets like BEHOLD_URL is in home-cloud) so
 // commits are attributed identically with or without the vault attached.
+//
+// The INFISICAL_* entries are the `homelab-builder-writer` machine identity on
+// magpie (Universal Auth): custom role `secret-writer` on the shared
+// `agent-apps` project — create/edit secrets + folders, list key names, but
+// NO read of values and NO delete. It is how the agent provisions the secrets
+// its apps need without a human round-trip, and without ever being able to
+// exfiltrate a value it did not itself write. AGENT_APPS_* are the constants
+// every agent app's InfisicalSecret CR carries (see home-cloud
+// docs/deploying-apps.md, "Agent-built apps").
 const homelab = new Environment({
   name: "homelab",
   packages: {
@@ -36,6 +45,12 @@ const homelab = new Environment({
     { key: "GIT_AUTHOR_EMAIL", value: "214316198+BinaryBourbon@users.noreply.github.com" },
     { key: "GIT_COMMITTER_NAME", value: "BinaryBourbon" },
     { key: "GIT_COMMITTER_EMAIL", value: "214316198+BinaryBourbon@users.noreply.github.com" },
+    { key: "INFISICAL_API_URL", value: "https://magpie.inevitable.fyi/api" },
+    { key: "INFISICAL_CLIENT_ID", value: "infisical:///dev/HOMELAB_BUILDER_INFISICAL_CLIENT_ID" },
+    { key: "INFISICAL_CLIENT_SECRET", value: "infisical:///dev/HOMELAB_BUILDER_INFISICAL_CLIENT_SECRET" },
+    { key: "AGENT_APPS_PROJECT_ID", value: "a20af155-c912-4191-b6e8-9d48b2a2e1d7" },
+    { key: "AGENT_APPS_PROJECT_SLUG", value: "agent-apps-3-g3-h" },
+    { key: "AGENT_APPS_OPERATOR_IDENTITY_ID", value: "65877c19-830f-49dc-b524-45764ffc1e4b" },
   ],
   metadata: {
     "managed-by": "chant",
