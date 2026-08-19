@@ -17,6 +17,14 @@ const homeCloud = new Environment({
   },
   networking_type: "unrestricted",
   secrets: [
+    // The token estate-medic opens its fix PR with (and its github MCP needs at
+    // provision — a missing key fails the sandbox outright). Carried here so
+    // the agent runs as a teammate without a vault; a vault still wins on
+    // collision for anyone who wants a different identity.
+    {
+      key: "GITHUB_TOKEN",
+      value: "infisical:///dev/GITHUB_TOKEN",
+    },
     {
       key: "BEHOLD_PROXY_TOKEN",
       value: "infisical:///dev/BEHOLD_PROXY_TOKEN",

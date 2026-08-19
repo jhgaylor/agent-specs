@@ -112,3 +112,46 @@ Nothing upstream catches a mismatch — exporting as `export const teamEnv = …
 The filename is just for humans. Re-running `make apply` reconciles in place. `npx chant build` alone (no `--output`) is a fast way to lint a change without applying it.
 
 The lexicon's own reference (fields, lint rules, secrets model, locked-sandbox posture) lives at [intentius.io/chant/lexicons/fountain](https://intentius.io/chant/lexicons/fountain/); the underlying manifest format is documented in the Fountain repo's [help pages](https://github.com/BinaryBourbon/fountain/tree/main/apps/fountain/priv/help).
+
+## Jake's team
+
+`src/agents/teams/jake/team-lead.ts` is the gateway teammate — it knows the
+roster below and drives it over the Fountain team API from inside its own
+sandbox (every sandbox gets `FOUNTAIN_BASE_URL`/`FOUNTAIN_TOKEN`; the
+`/api/team` routes accept that token). The rest of the roster:
+
+| teammate | for | env |
+|---|---|---|
+| `fountain-maintainer` | BinaryBourbon/fountain — fixes, features, API, docs → PRs | `fountain-dev` (repo + Erlang/Elixir/Postgres) |
+| `fountain-team-dev` | jhgaylor/fountain-team — the web client → PRs | `fountain-team` (repo + node; fountain read-only beside it) |
+| `home-cloud-steward` | jhgaylor/home-cloud day-to-day → PRs for Flux | `home-cloud-local`, **on the runner** (see below) |
+| `homelab-builder` | a new app for the estate → repo + onboarding PR | `homelab` |
+| `estate-medic` | incidents → diagnose via behold, fix PR | `home-cloud` |
+| `support-triager` | the support inbox → issues on the right repo; every 30 min | `support` |
+| `pr-reviewer` | reviews PRs | `eng` |
+
+Build the team after `make apply` (names are the upsert keys):
+
+```bash
+for n in team-lead fountain-maintainer fountain-team-dev home-cloud-steward homelab-builder estate-medic support-triager pr-reviewer; do
+  id=$(curl -s "$FOUNTAIN_ENDPOINT/api/agents" -H "Authorization: Bearer $FOUNTAIN_TOKEN" | jq -r --arg n "$n" '.data[] | select(.name==$n) | .id')
+  curl -s -X POST "$FOUNTAIN_ENDPOINT/api/team" -H "Authorization: Bearer $FOUNTAIN_TOKEN" -H 'content-type: application/json' -d "{\"agent_id\":\"$id\"}"
+done
+```
+
+**Runner pin.** `home-cloud-steward` runs on a self-hosted runner (Jake's
+machine, tailnet access). The chant lexicon does not type `sandbox_provider`
+yet, so it is set over the API after apply and survives later applies:
+
+```bash
+curl -X PUT "$FOUNTAIN_ENDPOINT/api/agents/<home-cloud-steward id>" -H "Authorization: Bearer $FOUNTAIN_TOKEN" \
+  -H 'content-type: application/json' -d '{"sandbox_provider":"runner"}'
+```
+
+Its env mounts the repo under `/home/sprite/home-cloud` — on a runner
+`/home/sprite` maps to the sandbox directory; a bare `/workspace/...` is an
+absolute path that does not exist on a Mac.
+
+The triager's routine: `POST /api/team/<support-triager id>/schedules`
+`{"name":"Triage the support inbox","cron":"*/30 * * * *","prompt":"Run your triage pass over the support inbox now. If there is nothing open and untriaged, reply with one line saying so."}`.
+
