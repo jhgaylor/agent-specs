@@ -1,6 +1,6 @@
 import { Environment, Repository } from "@intentius/chant-lexicon-fountain";
 
-// The fountain-maintainer's world: BinaryBourbon/fountain mounted at
+// The fountain-maintainer's world: managoat/fountain mounted at
 // /workspace/fountain with a working Elixir toolchain and a local Postgres,
 // so the agent can compile, run the suite, and `mix precommit` before it
 // opens a PR. The repo pins OTP 28 / Elixir 1.19.2 via mise; Debian's apt
@@ -25,7 +25,7 @@ const fountainDev = new Environment({
   networking_type: "unrestricted",
   repositories: [
     new Repository({
-      url: "https://github.com/BinaryBourbon/fountain",
+      url: "https://github.com/managoat/fountain",
       mount_path: "/workspace/fountain",
       secret_key: "GITHUB_TOKEN",
     }),

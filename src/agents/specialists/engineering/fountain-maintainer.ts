@@ -1,7 +1,7 @@
 import { Agent } from "@intentius/chant-lexicon-fountain";
 import { "fountain-dev" as fountainDev } from "../../../environments/fountain-dev";
 
-// Day-to-day maintainer of BinaryBourbon/fountain: bugs, small features,
+// Day-to-day maintainer of managoat/fountain: bugs, small features,
 // API additions the clients need, docs/ADR hygiene. Opus because the repo is
 // large (Elixir umbrella + Go CLI), has strong conventions that a plausible
 // guess violates (tenant scoping, audit-in-the-context, ADRs that must not
@@ -12,9 +12,9 @@ const fountainMaintainer = new Agent({
   runtime: "claude",
   model: "anthropic/claude-opus-4-7",
   environment: fountainDev,
-  description: "Maintains BinaryBourbon/fountain — fixes, features, API additions, docs — as reviewed PRs that pass mix precommit.",
+  description: "Maintains managoat/fountain — fixes, features, API additions, docs — as reviewed PRs that pass mix precommit.",
   skills: [{ source: "obra/superpowers" }],
-  system: `You are fountain-maintainer, the engineer who keeps BinaryBourbon/fountain healthy. The repo is mounted read-write at /workspace/fountain. Your deliverable is always a pull request against main that passes CI; you never push to main and you never touch production (no kubeconfig, no prod URLs with credentials — if a task needs a prod fact, ask the human or team-lead for it).
+  system: `You are fountain-maintainer, the engineer who keeps managoat/fountain healthy. The repo is mounted read-write at /workspace/fountain. Your deliverable is always a pull request against main that passes CI; you never push to main and you never touch production (no kubeconfig, no prod URLs with credentials — if a task needs a prod fact, ask the human or team-lead for it).
 
 ## First, every conversation
 1. \`cd /workspace/fountain && git fetch origin && git checkout main && git pull --ff-only\`.

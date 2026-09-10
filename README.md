@@ -1,6 +1,6 @@
 # agent-specs
 
-Personal [Fountain](https://github.com/BinaryBourbon/fountain) specs — agents, environments, vaults — kept independent of the Fountain codebase so the same manifest can be applied against any Fountain instance (local dev, hosted prod, a sprite I just spun up).
+Personal [Fountain](https://github.com/managoat/fountain) specs — agents, environments, vaults — kept independent of the Fountain codebase so the same manifest can be applied against any Fountain instance (local dev, hosted prod, a sprite I just spun up).
 
 Declared as typed [chant](https://intentius.io/chant/) resources via the [fountain lexicon](https://intentius.io/chant/lexicons/fountain/) (`@intentius/chant-lexicon-fountain`) rather than hand-written YAML — real `import`/`export`, editor autocompletion, and build-time lint (dangling environment references, open networking, secret-shaped literals, etc.) before anything reaches the API.
 
@@ -37,7 +37,7 @@ Or grab a binary directly:
 
 ```bash
 curl -L -o ~/.local/bin/fountain \
-  https://github.com/BinaryBourbon/fountain/releases/latest/download/fountain-darwin-arm64
+  https://github.com/managoat/fountain/releases/latest/download/fountain-darwin-arm64
 chmod +x ~/.local/bin/fountain
 ```
 
@@ -111,7 +111,7 @@ Nothing upstream catches a mismatch — exporting as `export const teamEnv = …
 
 The filename is just for humans. Re-running `make apply` reconciles in place. `npx chant build` alone (no `--output`) is a fast way to lint a change without applying it.
 
-The lexicon's own reference (fields, lint rules, secrets model, locked-sandbox posture) lives at [intentius.io/chant/lexicons/fountain](https://intentius.io/chant/lexicons/fountain/); the underlying manifest format is documented in the Fountain repo's [help pages](https://github.com/BinaryBourbon/fountain/tree/main/apps/fountain/priv/help).
+The lexicon's own reference (fields, lint rules, secrets model, locked-sandbox posture) lives at [intentius.io/chant/lexicons/fountain](https://intentius.io/chant/lexicons/fountain/); the underlying manifest format is documented in the Fountain repo's [help pages](https://github.com/managoat/fountain/tree/main/apps/fountain/priv/help).
 
 ## Jake's team
 
@@ -122,7 +122,7 @@ sandbox (every sandbox gets `FOUNTAIN_BASE_URL`/`FOUNTAIN_TOKEN`; the
 
 | teammate | for | env |
 |---|---|---|
-| `fountain-maintainer` | BinaryBourbon/fountain — fixes, features, API, docs → PRs | `fountain-dev` (repo + Erlang/Elixir/Postgres) |
+| `fountain-maintainer` | managoat/fountain — fixes, features, API, docs → PRs | `fountain-dev` (repo + Erlang/Elixir/Postgres) |
 | `fountain-team-dev` | jhgaylor/fountain-team — the web client → PRs | `fountain-team` (repo + node; fountain read-only beside it) |
 | `home-cloud-steward` | jhgaylor/home-cloud day-to-day → PRs for Flux | `home-cloud-local`, **on the runner** (see below) |
 | `homelab-builder` | a new app for the estate → repo + onboarding PR | `homelab` |

@@ -10,7 +10,7 @@ export const fountain = new Environment({
   networking_type: "unrestricted",
   repositories: [
     new Repository({
-      url: "https://github.com/BinaryBourbon/fountain",
+      url: "https://github.com/managoat/fountain",
       mount_path: "/workspace/fountain",
       secret_key: "GITHUB_TOKEN",
     }),

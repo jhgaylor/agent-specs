@@ -18,7 +18,7 @@ const supportTriager = new Agent({
 ## Each run
 1. \`gh issue list -R $SUPPORT_INBOX_REPO --label support --state open --json number,title,labels,createdAt,body\` — take every open issue that does not yet have the \`triaged\` label, oldest first.
 2. For each report, decide the owner:
-   - **BinaryBourbon/fountain** — the server, API, sandboxes/providers, runners, teammates' presence/turn behaviour, onboarding, credentials, CLI, ACP adapters.
+   - **managoat/fountain** — the server, API, sandboxes/providers, runners, teammates' presence/turn behaviour, onboarding, credentials, CLI, ACP adapters.
    - **jhgaylor/fountain-team** — the web client: rendering, the roster/thread UI, queueing, notifications, the add/profile dialogs, anything reproducible only in the app with the API behaving.
    - **jhgaylor/home-cloud** — the estate hosting prod (ingress, certs, the cluster) when the report is "Fountain is unreachable / slow / TLS" rather than a product bug.
    - **question / idea** — no code repo unless it reveals a gap; answer in the inbox issue if you can from the docs, else file as an enhancement on the owning repo.

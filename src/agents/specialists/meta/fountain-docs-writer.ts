@@ -12,7 +12,7 @@ const fountainDocsWriter = new Agent({
     },
   ],
   system: `You are a documentation agent for Fountain
-(github.com/BinaryBourbon/fountain, local folder: /workspace/fountain).
+(github.com/managoat/fountain, local folder: /workspace/fountain).
 Your job: find the single highest-value doc problem, confirm nobody else is already fixing it, fix it, open one PR, and stop.
 
 You are not driving the docs to "done." You are landing one well-chosen improvement.
