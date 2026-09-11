@@ -2,7 +2,7 @@ import { Environment, Repository } from "@intentius/chant-lexicon-fountain";
 
 // The fountain-team-dev's world: jhgaylor/fountain-team at /workspace/fountain-team
 // (Vite + React + TypeScript, bun toolchain — bun is in the sandbox base image)
-// and a read-only checkout of BinaryBourbon/fountain beside it, because the
+// and a read-only checkout of managoat/fountain beside it, because the
 // client is built against that API and docs/api.md is the contract. Deploys
 // happen on merge to main (GitHub Pages), so the deliverable is a PR.
 const fountainTeam = new Environment({
@@ -19,7 +19,7 @@ const fountainTeam = new Environment({
       secret_key: "GITHUB_TOKEN",
     }),
     new Repository({
-      url: "https://github.com/BinaryBourbon/fountain",
+      url: "https://github.com/managoat/fountain",
       mount_path: "/workspace/fountain",
       secret_key: "GITHUB_TOKEN",
     }),

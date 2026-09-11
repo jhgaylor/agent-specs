@@ -1,21 +1,31 @@
 import { Environment, Repository } from "@intentius/chant-lexicon-fountain";
 
-// The fountain-maintainer's world: BinaryBourbon/fountain mounted at
+// The fountain-maintainer's world: managoat/fountain mounted at
 // /workspace/fountain with a working Elixir toolchain and a local Postgres,
 // so the agent can compile, run the suite, and `mix precommit` before it
 // opens a PR. The repo pins OTP 28 / Elixir 1.19.2 via mise; Debian's apt
-// packages are a release behind, which is fine for running the suite
-// locally — CI on the PR is the real gate, and the agent is told to treat it
-// that way. Git is the only write path: no prod credentials, no kubeconfig.
+// packages are a release behind, which satisfies the umbrella's own
+// `elixir: "~> 1.18"` and is fine for running the suite locally — CI on the
+// PR is the real gate, and the agent is told to treat it that way. mise is
+// not an option here: its erlang backend builds OTP from source with kerl,
+// and fountain gives a setup_script 120 seconds.
+//
+// `erlang-nox`, never `erlang`. The bare metapackage pulls all of OTP,
+// which on a headless sandbox meant 322 packages: GTK 3, wxWidgets (webview
+// included), Mesa with the Vulkan drivers, Wayland, X11, fonts and an icon
+// theme for erlang-wx/erlang-observer, plus a full OpenJDK JRE for
+// erlang-jinterface and emacsen-common for erlang-mode. Four minutes of
+// install, against a hardcoded 300s package-stage timeout it kept losing to.
+// Git is the only write path: no prod credentials, no kubeconfig.
 const fountainDev = new Environment({
   name: "fountain-dev",
   packages: {
-    apt: ["jq", "ripgrep", "make", "erlang", "elixir", "postgresql", "postgresql-contrib", "inotify-tools", "golang-go"],
+    apt: ["jq", "ripgrep", "make", "erlang-nox", "elixir", "postgresql", "postgresql-contrib", "inotify-tools", "golang-go"],
   },
   networking_type: "unrestricted",
   repositories: [
     new Repository({
-      url: "https://github.com/BinaryBourbon/fountain",
+      url: "https://github.com/managoat/fountain",
       mount_path: "/workspace/fountain",
       secret_key: "GITHUB_TOKEN",
     }),
@@ -27,7 +37,9 @@ const fountainDev = new Environment({
   },
   setup_script: [
     "set -e",
-    "sudo service postgresql start || sudo pg_ctlcluster --skip-systemctl-redirect 17 main start || true",
+    // The major moves with Debian (18 at the time of writing, 17 before it),
+    // so ask pg_lsclusters rather than naming it.
+    "sudo service postgresql start || sudo pg_ctlcluster --skip-systemctl-redirect $(pg_lsclusters -h | awk 'NR==1{print $1, $2}') start || true",
     "sudo -u postgres psql -tc \"ALTER USER postgres PASSWORD 'postgres'\" >/dev/null 2>&1 || true",
     "cd /workspace/fountain",
     "mix local.hex --force >/dev/null && mix local.rebar --force >/dev/null",

@@ -12,4 +12,4 @@ run:
 
 install:
 	npm install
-	gh release download --repo BinaryBourbon/fountain --pattern 'fountain-darwin-arm64' -O ~/.local/bin/fountain --clobber && chmod +x ~/.local/bin/fountain
+	gh release download --repo managoat/fountain --pattern 'fountain-darwin-arm64' -O ~/.local/bin/fountain --clobber && chmod +x ~/.local/bin/fountain
