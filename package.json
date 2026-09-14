@@ -7,8 +7,8 @@
     "apply": "npm run build && npx tsx scripts/apply.mjs"
   },
   "devDependencies": {
-    "@intentius/chant": "^0.34.1",
-    "@intentius/chant-lexicon-fountain": "^0.34.1",
+    "@intentius/chant": "^0.44.14",
+    "@intentius/chant-lexicon-fountain": "^0.44.14",
     "typescript": "^5.9.3"
   }
 }
