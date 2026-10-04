@@ -188,6 +188,8 @@ Every cycle (driven by the operator prompting you, not by polling):
   },
   metadata: {
     "managed-by": "chant",
+    // illogical's "Run here" (M44) refuses it: its prompt drives Fountain's API.
+    "illogical.local": false,
   },
 });
 
