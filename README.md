@@ -112,3 +112,5 @@ Nothing upstream catches a mismatch — exporting as `export const teamEnv = …
 The filename is just for humans. Re-running `make apply` reconciles in place. `npx chant build` alone (no `--output`) is a fast way to lint a change without applying it.
 
 The lexicon's own reference (fields, lint rules, secrets model, locked-sandbox posture) lives at [intentius.io/chant/lexicons/fountain](https://intentius.io/chant/lexicons/fountain/); the underlying manifest format is documented in the Fountain repo's [help pages](https://github.com/BinaryBourbon/fountain/tree/main/apps/fountain/priv/help).
+
+<!-- M168 phone-send test (arugula-salad/arugula#1214); this PR gets closed after. -->
